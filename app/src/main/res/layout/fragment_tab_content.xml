@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+	>
+
+	<android.support.v7.widget.RecyclerView
+		android:id="@+id/rv_contact"
+		android:layout_above="@+id/btn_backup"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"/>
+
+	<com.weikuo.elemenzhang.phonebookwk.view.customview.RecyclerViewFastScroller
+		android:id="@+id/fastscroller"
+		android:layout_alignBottom="@id/rv_contact"
+		android:layout_alignParentEnd="true"
+		android:layout_alignParentRight="true"
+		android:layout_alignTop="@id/rv_contact"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"/>
+	<Button
+		android:id="@+id/btn_backup"
+		android:layout_width="match_parent"
+		android:layout_height="48dp"
+		android:layout_alignParentBottom="true"
+		android:layout_margin="12dp"
+		android:background="@color/colorPrimary"
+		android:text="Backup"
+		android:textColor="@android:color/white"/>
+
+</RelativeLayout>
