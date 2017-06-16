@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -49,7 +48,8 @@ public class ContactFragment extends Fragment {
     RecyclerView rvContact;
     @BindView(R.id.btn_backup)
     Button mFab;
-    @BindView(R.id.fastscroller)RecyclerViewFastScroller fastScroller;
+    @BindView(R.id.fastscroller)
+    RecyclerViewFastScroller fastScroller;
 
     private List<Contact> contactList;
     private ContactAdapter contactAdapter;
@@ -59,15 +59,14 @@ public class ContactFragment extends Fragment {
     private final int BACK_UP_SUCCEED = 1;
     private final int BACK_UP_FAILED = 2;
 
-    private Handler mHandler = new Handler() {
+    private  Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
                 case INIT_CANTACT_LIST:
                     contactAdapter = new ContactAdapter(getActivity(), contactList);
-                    rvContact.setAdapter(contactAdapter);
-                    rvContact.setLayoutManager(new LinearLayoutManager(getActivity(),LinearLayoutManager.VERTICAL,false){
+                    rvContact.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false) {
                         @Override
                         public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
                             super.onLayoutChildren(recycler, state);
@@ -85,6 +84,7 @@ public class ContactFragment extends Fragment {
                             fastScroller.setVisibility(contactAdapter.getItemCount() > itemsShown ? View.VISIBLE : View.GONE);
                         }
                     });
+                    rvContact.setAdapter(contactAdapter);
                     fastScroller.setRecyclerView(rvContact);
                     fastScroller.setViewsToUse(R.layout.recycler_view_fast_scroller__fast_scroller, R.id.fastscroller_bubble, R.id.fastscroller_handle);
                     break;
@@ -182,6 +182,14 @@ public class ContactFragment extends Fragment {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         ContactFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
         requestContactPermission();
+    }
+
+    public ContactAdapter getContactAdapter() {
+        return contactAdapter;
+    }
+
+    public List<Contact> getContactList() {
+        return contactList;
     }
 
     private static VCard createVCard(Contact contact) throws IOException {
