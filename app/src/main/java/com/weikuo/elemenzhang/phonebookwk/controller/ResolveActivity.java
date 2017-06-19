@@ -4,10 +4,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
 import com.weikuo.elemenzhang.phonebookwk.R;
+import com.weikuo.elemenzhang.phonebookwk.adapter.ResolvedContactsAdapter;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,12 +34,18 @@ public class ResolveActivity extends BaseActivity {
     private String filePath = "";
     private final int RESOLVE_FINISHIED=0;
 
+    private ResolvedContactsAdapter adapter;
     private Handler handler=new Handler(){
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what){
-
+                case RESOLVE_FINISHIED:
+                    adapter=new ResolvedContactsAdapter(ResolveActivity.this,vcards);
+                    dismissProgressbar();
+                    rvArContact.setLayoutManager(new LinearLayoutManager(ResolveActivity.this));
+                    rvArContact.setAdapter(adapter);
+                    break;
             }
         }
     };
@@ -74,7 +82,7 @@ public class ResolveActivity extends BaseActivity {
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        showProgressbar();
     }
 
     @Override

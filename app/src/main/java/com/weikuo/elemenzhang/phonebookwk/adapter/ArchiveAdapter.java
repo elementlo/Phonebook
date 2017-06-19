@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -24,6 +25,7 @@ import butterknife.ButterKnife;
 public class ArchiveAdapter extends RecyclerView.Adapter<ArchiveAdapter.MyViewHolder> {
     private Context context;
     private List<Archives> archivesList;
+    public static int archiveOption=-1;
 
     private OnItemClickListner onItemClickListner;
 
@@ -56,6 +58,14 @@ public class ArchiveAdapter extends RecyclerView.Adapter<ArchiveAdapter.MyViewHo
                 @Override
                 public void onClick(View v) {
                     onItemClickListner.onItemClick(position);
+                }
+            });
+            holder.cbArchive.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked){
+                        archiveOption=position;
+                    }
                 }
             });
         }

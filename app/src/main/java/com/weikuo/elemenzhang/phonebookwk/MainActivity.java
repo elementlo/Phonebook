@@ -100,6 +100,7 @@ public class MainActivity extends BaseActivity
             @Override
             public void onPageSelected(int position) {
                 currentPage = position;
+                invalidateOptionsMenu();
             }
 
             @Override
@@ -197,6 +198,15 @@ public class MainActivity extends BaseActivity
         return true;
     }
 
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (currentPage==1){
+            menu.findItem(R.id.item_checkall).setVisible(false);
+        }else
+            menu.findItem(R.id.item_checkall).setVisible(true);
+        return super.onPrepareOptionsMenu(menu);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

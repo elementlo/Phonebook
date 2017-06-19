@@ -32,16 +32,30 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
     private Context context;
     private List<Contact> contactList;
     private SparseArray<Boolean> checkBoxStateArray = new SparseArray<>();
-    public static int checkedVolume = 0;
 
     public ContactAdapter(Context context, List<Contact> contactList) {
         this.context = context;
+        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
         Collections.sort(contactList, new Comparator<Contact>() {
             @Override
             public int compare(Contact o1, Contact o2) {
                 if (o1.getGivenName() != null && o2.getGivenName() != null) {
-                    return o1.getGivenName().compareTo(o2.getGivenName());
-                } else return 0;
+                    int former = o1.getGivenName().charAt(0);
+                    int latter = o2.getGivenName().charAt(0);
+                    if (former < 65 || former > 90) {
+                        return 1;
+                    } else if (latter < 65 || latter > 90) {
+                        return -1;
+                    } else {
+                        return o1.getGivenName().compareTo(o2.getGivenName());
+                    }
+                } else if (o1.getGivenName() == null && o2.getGivenName() != null) {
+                    return 1;
+                } else if (o1.getGivenName() != null && o2.getGivenName() == null) {
+                    return -1;
+                } else {
+                    return 0;
+                }
             }
         });
         this.contactList = contactList;
@@ -94,9 +108,11 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
             if (name == null) {
                 name = contactList.get(i).getFamilyName();
             }
-            char first = name.toUpperCase().charAt(0);
-            if (first == selection) {
-                return i;
+            if (name != null) {
+                char first = name.toUpperCase().charAt(0);
+                if (first == selection) {
+                    return i;
+                }
             }
         }
         return -1;
@@ -130,7 +146,10 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
 
     @Override
     public String getTextToShowInBubble(int pos) {
-        return Character.toString(contactList.get(pos).getGivenName().charAt(0));
+        if (contactList.get(pos).getGivenName() != null)
+            return Character.toString(contactList.get(pos).getGivenName().charAt(0));
+        else
+            return "";
     }
 
     public List<Contact> filter(List<Contact> contactList, String query) {

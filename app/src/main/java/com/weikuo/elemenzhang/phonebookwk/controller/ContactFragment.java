@@ -16,21 +16,28 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.github.tamir7.contacts.Contact;
 import com.github.tamir7.contacts.Contacts;
 import com.weikuo.elemenzhang.phonebookwk.MainActivity;
 import com.weikuo.elemenzhang.phonebookwk.R;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContactAdapter;
+import com.weikuo.elemenzhang.phonebookwk.utils.GeneralTools;
 import com.weikuo.elemenzhang.phonebookwk.view.customview.RecyclerViewFastScroller;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.VCardVersion;
@@ -38,6 +45,8 @@ import ezvcard.property.Address;
 import ezvcard.property.StructuredName;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
+import tk.zielony.naturaldateformat.AbsoluteDateFormat;
+import tk.zielony.naturaldateformat.NaturalDateFormat;
 
 /**
  * Created by elemenzhang on 2017/6/9.
@@ -50,6 +59,10 @@ public class ContactFragment extends Fragment {
     Button mFab;
     @BindView(R.id.fastscroller)
     RecyclerViewFastScroller fastScroller;
+    @BindView(R.id.rl_bottommenu)RelativeLayout bottomMenu;
+    @BindView(R.id.tv_itemnum)TextView tvItemNum;
+    @BindView(R.id.tv_percent)TextView tvPercent;
+    @BindView(R.id.btn_done)Button btnDone;
 
     private List<Contact> contactList;
     private ContactAdapter contactAdapter;
@@ -58,32 +71,18 @@ public class ContactFragment extends Fragment {
     private final int INIT_CANTACT_LIST = 0;
     private final int BACK_UP_SUCCEED = 1;
     private final int BACK_UP_FAILED = 2;
+    private final int BROADCAST_ARCHIVE=3;
+    private final int SUBMIT_SUM_CHECK=4;
+    private AbsoluteDateFormat absFormat;
+    private int sumCheck=0;
 
-    private  Handler mHandler = new Handler() {
+    private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
                 case INIT_CANTACT_LIST:
                     contactAdapter = new ContactAdapter(getActivity(), contactList);
-                    rvContact.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false) {
-                        @Override
-                        public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
-                            super.onLayoutChildren(recycler, state);
-                            final int firstVisibleItemPosition = findFirstVisibleItemPosition();
-                            if (firstVisibleItemPosition != 0) {
-                                // this avoids trying to handle un-needed calls
-                                if (firstVisibleItemPosition == -1)
-                                    //not initialized, or no items shown, so hide fast-scroller
-                                    fastScroller.setVisibility(View.GONE);
-                                return;
-                            }
-                            final int lastVisibleItemPosition = findLastVisibleItemPosition();
-                            int itemsShown = lastVisibleItemPosition - firstVisibleItemPosition + 1;
-                            //if all items are shown, hide the fast-scroller
-                            fastScroller.setVisibility(contactAdapter.getItemCount() > itemsShown ? View.VISIBLE : View.GONE);
-                        }
-                    });
                     rvContact.setAdapter(contactAdapter);
                     fastScroller.setRecyclerView(rvContact);
                     fastScroller.setViewsToUse(R.layout.recycler_view_fast_scroller__fast_scroller, R.id.fastscroller_bubble, R.id.fastscroller_handle);
@@ -92,11 +91,15 @@ public class ContactFragment extends Fragment {
                     Snackbar.make(mFab, "Back-up succeeds!", Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     ((MainActivity) getActivity()).dismissProgressbar();
+                    EventBus.getDefault().post(BROADCAST_ARCHIVE);
                     break;
                 case BACK_UP_FAILED:
                     Snackbar.make(mFab, "Back-up fails!", Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     ((MainActivity) getActivity()).dismissProgressbar();
+                    break;
+                case SUBMIT_SUM_CHECK:
+                    sumCheck=msg.arg1;
                     break;
             }
         }
@@ -120,6 +123,7 @@ public class ContactFragment extends Fragment {
 
     private void initView() {
         vcardList = new ArrayList<>();
+        absFormat=new AbsoluteDateFormat(getActivity(), NaturalDateFormat.DATE);
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -129,11 +133,30 @@ public class ContactFragment extends Fragment {
                     if (checkBoxStateArray == null) {
                         return;
                     }
+                    mFab.setVisibility(View.GONE);
+                    bottomMenu.setVisibility(View.VISIBLE);
                     ContactFragmentPermissionsDispatcher.backupTaskWithCheck(ContactFragment.this);
                 }
             }
         });
-
+        rvContact.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false) {
+            @Override
+            public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
+                super.onLayoutChildren(recycler, state);
+                final int firstVisibleItemPosition = findFirstVisibleItemPosition();
+                if (firstVisibleItemPosition != 0) {
+                    // this avoids trying to handle un-needed calls
+                    if (firstVisibleItemPosition == -1)
+                        //not initialized, or no items shown, so hide fast-scroller
+                        fastScroller.setVisibility(View.GONE);
+                    return;
+                }
+                final int lastVisibleItemPosition = findLastVisibleItemPosition();
+                int itemsShown = lastVisibleItemPosition - firstVisibleItemPosition + 1;
+                //if all items are shown, hide the fast-scroller
+                fastScroller.setVisibility(contactAdapter.getItemCount() > itemsShown ? View.VISIBLE : View.GONE);
+            }
+        });
     }
 
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -147,18 +170,31 @@ public class ContactFragment extends Fragment {
                             VCard vcard = createVCard(contactList.get(i));
                             vcard.validate(VCardVersion.V4_0);
                             vcardList.add(vcard);
+                            Message message = mHandler.obtainMessage();
+                            message.what=SUBMIT_SUM_CHECK;
+                            message.arg1=vcardList.size();
+                            mHandler.sendMessage(message);
                         }
                     }
-                    File file = new File(Environment.getExternalStorageDirectory() + "/contacts.vcf");
-                    Ezvcard.write(vcardList).go(file);
-                    Message message = mHandler.obtainMessage();
-                    message.what = BACK_UP_SUCCEED;
-                    mHandler.sendMessage(message);
+                    String date=absFormat.format(new Date().getTime());
+
+                    File file = new File(Environment.getExternalStorageDirectory() + "/PHONEBOOK");
+                    if (!file.exists()) {
+                        file.mkdir();
+                    }
+                    File bookFile = new File(file + "/"+date+".vcf");
+                    if (bookFile.exists()){
+                        bookFile=GeneralTools.generateFileName(file,date);
+                    }
+                    Ezvcard.write(vcardList).go(bookFile);
+                    Message messageSuc = mHandler.obtainMessage();
+                    messageSuc.what = BACK_UP_SUCCEED;
+                    mHandler.sendMessage(messageSuc);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Message message = mHandler.obtainMessage();
-                    message.what = BACK_UP_FAILED;
-                    mHandler.sendMessage(message);
+                    Message messageFal = mHandler.obtainMessage();
+                    messageFal.what = BACK_UP_FAILED;
+                    mHandler.sendMessage(messageFal);
                 }
             }
         }).start();
@@ -201,7 +237,6 @@ public class ContactFragment extends Fragment {
         vcard.setStructuredName(n);
         vcard.setOrganization(contact.getCompanyName());
 
-
         if (contact.getAddresses() != null && contact.getAddresses().size() != 0) {
             Address adr = new Address();
             adr.setStreetAddress(contact.getAddresses().get(0).getStreet());
@@ -224,8 +259,13 @@ public class ContactFragment extends Fragment {
                 vcard.addTelephoneNumber(contact.getPhoneNumbers().get(i).getNumber());
             }
         }
-
         return vcard;
+    }
+
+    @OnClick(R.id.btn_done)
+    public void doneClick(){
+        bottomMenu.setVisibility(View.GONE);
+        mFab.setVisibility(View.VISIBLE);
     }
 
 }
