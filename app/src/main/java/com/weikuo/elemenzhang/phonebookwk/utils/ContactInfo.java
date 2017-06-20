@@ -242,33 +242,42 @@ public class ContactInfo {
             // 获取联系人电话信息
             List<Telephone> phoneList = info.getTelephoneNumbers();
             /** 录入联系电话 */
-            for (Telephone phoneInfo : phoneList) {
-                values.clear();
-                values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
-                values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
-                // 设置录入联系人电话信息
-                values.put(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneInfo.getText());
-                values.put(ContactsContract.CommonDataKinds.Phone.TYPE, phoneInfo.getTypes().get(0).getValue());
-                // 往data表入电话数据
-                context.getContentResolver().insert(
-                        ContactsContract.Data.CONTENT_URI, values);
+            if (phoneList != null && phoneList.size() > 0) {
+                for (Telephone phoneInfo : phoneList) {
+                    values.clear();
+                    values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
+                    values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
+                    // 设置录入联系人电话信息
+                    values.put(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneInfo.getText());
+                    if (phoneInfo.getTypes() != null && phoneInfo.getTypes().size() > 0) {
+                        values.put(ContactsContract.CommonDataKinds.Phone.TYPE, phoneInfo.getTypes().get(0).getValue());
+                    }
+                    // 往data表入电话数据
+                    context.getContentResolver().insert(
+                            ContactsContract.Data.CONTENT_URI, values);
+                }
             }
 
             // 获取联系人邮箱信息
             List<Email> emailList = info.getEmails();
 
             /** 录入联系人邮箱信息 */
-            for (Email email : emailList) {
-                values.clear();
-                values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
-                values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-                // 设置录入的邮箱信息
-                values.put(ContactsContract.CommonDataKinds.Email.DATA, email.getValue());
-                values.put(ContactsContract.CommonDataKinds.Email.TYPE, email.getTypes().get(0).getValue());
-                // 往data表入Email数据
-                context.getContentResolver().insert(
-                        ContactsContract.Data.CONTENT_URI, values);
+            if (emailList != null && emailList.size() > 0) {
+                for (Email email : emailList) {
+                    values.clear();
+                    values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
+                    values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+                    // 设置录入的邮箱信息
+                    values.put(ContactsContract.CommonDataKinds.Email.DATA, email.getValue());
+                    if (email.getTypes() != null && email.getTypes().size() > 0) {
+                        values.put(ContactsContract.CommonDataKinds.Email.TYPE, email.getTypes().get(0).getValue());
+                    }
+                    // 往data表入Email数据
+                    context.getContentResolver().insert(
+                            ContactsContract.Data.CONTENT_URI, values);
+                }
             }
+
 
         }
 

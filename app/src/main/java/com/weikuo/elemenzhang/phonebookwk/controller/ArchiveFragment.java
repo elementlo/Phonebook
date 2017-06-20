@@ -53,9 +53,11 @@ public class ArchiveFragment extends Fragment {
 
     private List<Archives> archivesList = new ArrayList<>();
     private final int SHOW_AR_LIST = 0;
-    public final int SUCCESS_FLAG = 1;
-    public final int FAIL_FLAG = 2;
-    public final int RECOVER_WHAT = 3;
+    public static final int SUCCESS_FLAG = 1;
+    private final int FAIL_FLAG = 2;
+    private final int RECOVER_WHAT = 3;
+    private final int BROADCAST_CONTACTS = 4;
+    private final int DELETE_SUCCEED = 5;
 
     private ArchiveAdapter adapter;
     ContactInfo.ContactHandler insertHandler = ContactInfo.ContactHandler.getInstance();
@@ -77,10 +79,18 @@ public class ArchiveFragment extends Fragment {
                     });
                     rvArchives.setAdapter(adapter);
                     break;
-                case RECOVER_WHAT:
+                case SUCCESS_FLAG:
                     ((MainActivity) getActivity()).dismissProgressbar();
                     Snackbar.make(btnRes, "Back-up succeeds!", Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
+                    EventBus.getDefault().post(BROADCAST_CONTACTS);
+                    break;
+                case DELETE_SUCCEED:
+                    if (archivesList!=null){
+                        archivesList.clear();
+                        ArchiveFragmentPermissionsDispatcher.getVCFFromStorageWithCheck
+                                (ArchiveFragment.this, new File(Environment.getExternalStorageDirectory() + "/PHONEBOOK"));
+                    }
                     break;
             }
             super.handleMessage(msg);
@@ -94,7 +104,34 @@ public class ArchiveFragment extends Fragment {
         View contentView = inflater.inflate(R.layout.fragment_tab_archives, null);
         EventBus.getDefault().register(this);
         ButterKnife.bind(this, contentView);
+        initView();
         return contentView;
+    }
+
+    private void initView() {
+        ((MainActivity) getActivity()).setOnDeleteArchClick(new MainActivity.onDeleteArchClick() {
+            @Override
+            public void onArchItemClick() {
+                if (ArchiveAdapter.archiveOption != -1) {
+                    File file = new File(archivesList.get(ArchiveAdapter.archiveOption).getFilePath());
+                    deleteArchive(file);
+                }
+            }
+        });
+    }
+
+    public void deleteArchive(final File file) {
+        if (file.exists() && file.isFile()) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    file.delete();
+                    Message message = handler.obtainMessage();
+                    message.what = DELETE_SUCCEED;
+                    handler.sendMessage(message);
+                }
+            }).run();
+        }
     }
 
     @Override
@@ -114,7 +151,7 @@ public class ArchiveFragment extends Fragment {
             @Override
             public void run() {
                 ArchiveFragmentPermissionsDispatcher.getVCFFromStorageWithCheck
-                        (ArchiveFragment.this, new File(Environment.getExternalStorageDirectory()+"/PHONEBOOK"));
+                        (ArchiveFragment.this, new File(Environment.getExternalStorageDirectory() + "/PHONEBOOK"));
             }
         }).start();
     }
@@ -170,7 +207,7 @@ public class ArchiveFragment extends Fragment {
             public void run() {
                 Message message = new Message();
                 try {
-                    File file=new File(archivesList.
+                    File file = new File(archivesList.
                             get(ArchiveAdapter.archiveOption).getFilePath());
                     List<VCard> vCards = Ezvcard.parse(file).all();
                     for (VCard vCard : vCards) {
@@ -182,20 +219,20 @@ public class ArchiveFragment extends Fragment {
                     message.obj = "recover fail";
                     message.arg1 = FAIL_FLAG;
                     e.printStackTrace();
-                } finally {
-                    message.what = RECOVER_WHAT;
-                    handler.sendMessage(message);
                 }
             }
         }).start();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(Integer integer){
+    public void onMessageEvent(Integer integer) {
         Logger.d("here");
-        archivesList.clear();
-        ArchiveFragmentPermissionsDispatcher.getVCFFromStorageWithCheck
-                (ArchiveFragment.this, new File(Environment.getExternalStorageDirectory()+"/PHONEBOOK"));
+        if (archivesList!=null){
+            archivesList.clear();
+            ArchiveFragmentPermissionsDispatcher.getVCFFromStorageWithCheck
+                    (ArchiveFragment.this, new File(Environment.getExternalStorageDirectory() + "/PHONEBOOK"));
+        }
+
     }
 
 }

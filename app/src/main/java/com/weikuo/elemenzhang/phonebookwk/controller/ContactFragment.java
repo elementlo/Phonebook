@@ -1,10 +1,14 @@
 package com.weikuo.elemenzhang.phonebookwk.controller;
 
 import android.Manifest;
+import android.content.ContentProviderOperation;
+import android.content.OperationApplicationException;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.RemoteException;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -28,6 +32,8 @@ import com.weikuo.elemenzhang.phonebookwk.utils.GeneralTools;
 import com.weikuo.elemenzhang.phonebookwk.view.customview.RecyclerViewFastScroller;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +71,8 @@ public class ContactFragment extends Fragment {
     @BindView(R.id.btn_done)Button btnDone;
 
     private List<Contact> contactList;
+    private ArrayList<ContentProviderOperation> ops;
+    private String[] args;
     private ContactAdapter contactAdapter;
     private SparseArray<Boolean> checkBoxStateArray;
     private ArrayList<VCard> vcardList;
@@ -74,7 +82,6 @@ public class ContactFragment extends Fragment {
     private final int BROADCAST_ARCHIVE=3;
     private final int SUBMIT_SUM_CHECK=4;
     private AbsoluteDateFormat absFormat;
-    private int sumCheck=0;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -99,7 +106,6 @@ public class ContactFragment extends Fragment {
                     ((MainActivity) getActivity()).dismissProgressbar();
                     break;
                 case SUBMIT_SUM_CHECK:
-                    sumCheck=msg.arg1;
                     break;
             }
         }
@@ -111,6 +117,7 @@ public class ContactFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View contentView = inflater.inflate(R.layout.fragment_tab_content, null);
         ButterKnife.bind(this, contentView);
+        EventBus.getDefault().register(this);
         ContactFragmentPermissionsDispatcher.requestContactPermissionWithCheck(this);
         return contentView;
     }
@@ -121,8 +128,15 @@ public class ContactFragment extends Fragment {
         initView();
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        EventBus.getDefault().unregister(this);
+    }
+
     private void initView() {
         vcardList = new ArrayList<>();
+        ops=new ArrayList<>();
         absFormat=new AbsoluteDateFormat(getActivity(), NaturalDateFormat.DATE);
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -155,6 +169,39 @@ public class ContactFragment extends Fragment {
                 int itemsShown = lastVisibleItemPosition - firstVisibleItemPosition + 1;
                 //if all items are shown, hide the fast-scroller
                 fastScroller.setVisibility(contactAdapter.getItemCount() > itemsShown ? View.VISIBLE : View.GONE);
+            }
+        });
+
+        ((MainActivity)getActivity()).setOnDeleteItemClickListner(new MainActivity.onDeleteItemClick() {
+            @Override
+            public void onItemClick() {
+                List<String> transport=new ArrayList<String>();
+                checkBoxStateArray = contactAdapter.getCheckBoxStateArray();
+                for (int i =0;i<checkBoxStateArray.size();i++){
+                    if (checkBoxStateArray.get(i)){
+                        transport.add(contactList.get(i).getId()+"");
+                    }
+                }
+
+                for (int i = 0; i < transport.size(); i++) {
+                    args=new String[]{transport.get(i)};
+                    ops.add(ContentProviderOperation.newDelete(ContactsContract.RawContacts.CONTENT_URI)
+                            .withSelection(ContactsContract.RawContacts.CONTACT_ID + "=?", args).build());
+                }
+                try {
+                    getActivity().getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                } catch (OperationApplicationException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    if (contactList!=null){
+                        contactList.clear();
+                        ContactFragmentPermissionsDispatcher.
+                                requestContactPermissionWithCheck(ContactFragment.this);
+                    }
+                }
             }
         });
     }
@@ -266,6 +313,14 @@ public class ContactFragment extends Fragment {
     public void doneClick(){
         bottomMenu.setVisibility(View.GONE);
         mFab.setVisibility(View.VISIBLE);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAchiveMessage(Integer integer){
+        if (contactList!=null){
+            contactList.clear();
+            ContactFragmentPermissionsDispatcher.requestContactPermissionWithCheck(this);
+        }
     }
 
 }

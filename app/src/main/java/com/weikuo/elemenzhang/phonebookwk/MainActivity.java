@@ -5,7 +5,6 @@ import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -18,7 +17,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.Toast;
 
 import com.github.tamir7.contacts.Contact;
 import com.orhanobut.logger.Logger;
@@ -54,6 +52,24 @@ public class MainActivity extends BaseActivity
     private int currentPage = 0;
 
     private ContentPagerAdapter pagerAdapter;
+    private onDeleteItemClick onDeleteItemClick;
+    private onDeleteArchClick onDeleteArchClick;
+
+    public void setOnDeleteItemClickListner(onDeleteItemClick onDeleteItemClick){
+        this.onDeleteItemClick=onDeleteItemClick;
+    }
+
+    public void setOnDeleteArchClick(onDeleteArchClick onDeleteArchClick){
+        this.onDeleteArchClick=onDeleteArchClick;
+    }
+
+    public interface onDeleteItemClick{
+        void onItemClick();
+    }
+
+    public interface onDeleteArchClick{
+        void onArchItemClick();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,16 +80,6 @@ public class MainActivity extends BaseActivity
 
         initView();
         initTabContent();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
     }
 
     private void initTabContent() {
@@ -201,9 +207,9 @@ public class MainActivity extends BaseActivity
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (currentPage==1){
+        if (currentPage == 1) {
             menu.findItem(R.id.item_checkall).setVisible(false);
-        }else
+        } else
             menu.findItem(R.id.item_checkall).setVisible(true);
         return super.onPrepareOptionsMenu(menu);
     }
@@ -214,15 +220,18 @@ public class MainActivity extends BaseActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.item_checkall) {
-            Logger.d("here");
-
-
-            return true;
-        } else if (id == R.id.item_delete) {
-
-            return true;
+        if (currentPage==0){
+            if (id == R.id.item_delete) {
+                onDeleteItemClick.onItemClick();
+                return true;
+            }
+        }else {
+            if (id==R.id.item_delete){
+                onDeleteArchClick.onArchItemClick();
+                return true;
+            }
         }
+
         return super.onOptionsItemSelected(item);
     }
 
