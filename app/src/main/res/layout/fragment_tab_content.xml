@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:recyclerviewfastscroller="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
 	>
@@ -10,14 +11,25 @@
 		android:layout_height="match_parent"
 		android:layout_above="@+id/btn_backup"/>
 
-	<com.weikuo.elemenzhang.phonebookwk.view.customview.RecyclerViewFastScroller
-		android:id="@+id/fastscroller"
-		android:layout_width="wrap_content"
+	<xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller
+		android:id="@+id/fast_scroller"
+		android:layout_width="30dp"
 		android:layout_height="match_parent"
-		android:layout_alignBottom="@id/rv_contact"
-		android:layout_alignParentEnd="true"
+		android:layout_above="@+id/btn_backup"
 		android:layout_alignParentRight="true"
-		android:layout_alignTop="@id/rv_contact"/>
+		recyclerviewfastscroller:rfs_barColor="#ffcecece"
+		recyclerviewfastscroller:rfs_handleBackground="@drawable/fast_scroller_handle_rounded"
+		/>
+
+	<com.weikuo.elemenzhang.phonebookwk.view.customview.ColorGroupSectionTitleIndicator
+		android:id="@+id/fast_scroller_section_title_indicator"
+		android:layout_width="wrap_content"
+		android:layout_height="72dp"
+		android:layout_toLeftOf="@id/fast_scroller"
+		android:layout_toStartOf="@id/fast_scroller"
+		recyclerviewfastscroller:rfs_backgroundColor="@color/colorPrimary"
+		recyclerviewfastscroller:rfs_textColor="@android:color/white"
+		/>
 
 	<Button
 		android:id="@+id/btn_backup"

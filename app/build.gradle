@@ -38,4 +38,5 @@ dependencies {
     compile 'com.googlecode.ez-vcard:ez-vcard:0.10.2'
     compile 'org.greenrobot:eventbus:3.0.0'
     compile 'com.github.ZieIony:NaturalDateFormat:-SNAPSHOT'
+    compile 'xyz.danoz:recyclerviewfastscroller:0.1.3'
 }

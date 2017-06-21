@@ -23,7 +23,10 @@ import butterknife.ButterKnife;
  */
 
 public class ArchiveAdapter extends RecyclerView.Adapter<ArchiveAdapter.MyViewHolder> {
+    private RadioButton lastCheckedRB = null;
+
     private Context context;
+
     private List<Archives> archivesList;
     public static int archiveOption=-1;
 
@@ -65,6 +68,11 @@ public class ArchiveAdapter extends RecyclerView.Adapter<ArchiveAdapter.MyViewHo
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked){
                         archiveOption=position;
+                        RadioButton checked_rb = (RadioButton) buttonView;
+                        if(lastCheckedRB != null){
+                            lastCheckedRB.setChecked(false);
+                        }
+                        lastCheckedRB = checked_rb;
                     }
                 }
             });

@@ -3,6 +3,7 @@ package com.weikuo.elemenzhang.phonebookwk.controller;
 import android.Manifest;
 import android.content.ContentProviderOperation;
 import android.content.OperationApplicationException;
+import android.icu.util.IndianCalendar;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -29,6 +30,7 @@ import com.weikuo.elemenzhang.phonebookwk.MainActivity;
 import com.weikuo.elemenzhang.phonebookwk.R;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContactAdapter;
 import com.weikuo.elemenzhang.phonebookwk.utils.GeneralTools;
+import com.weikuo.elemenzhang.phonebookwk.view.customview.ColorGroupSectionTitleIndicator;
 import com.weikuo.elemenzhang.phonebookwk.view.customview.RecyclerViewFastScroller;
 
 import org.greenrobot.eventbus.EventBus;
@@ -53,6 +55,7 @@ import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 import tk.zielony.naturaldateformat.AbsoluteDateFormat;
 import tk.zielony.naturaldateformat.NaturalDateFormat;
+import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 /**
  * Created by elemenzhang on 2017/6/9.
@@ -61,10 +64,11 @@ import tk.zielony.naturaldateformat.NaturalDateFormat;
 public class ContactFragment extends Fragment {
     @BindView(R.id.rv_contact)
     RecyclerView rvContact;
+    @BindView(R.id.fast_scroller)VerticalRecyclerViewFastScroller fastScroller;
     @BindView(R.id.btn_backup)
     Button mFab;
-    @BindView(R.id.fastscroller)
-    RecyclerViewFastScroller fastScroller;
+    @BindView(R.id.fast_scroller_section_title_indicator)ColorGroupSectionTitleIndicator sectionTitleIndicator;
+
     @BindView(R.id.rl_bottommenu)RelativeLayout bottomMenu;
     @BindView(R.id.tv_itemnum)TextView tvItemNum;
     @BindView(R.id.tv_percent)TextView tvPercent;
@@ -91,8 +95,6 @@ public class ContactFragment extends Fragment {
                 case INIT_CANTACT_LIST:
                     contactAdapter = new ContactAdapter(getActivity(), contactList);
                     rvContact.setAdapter(contactAdapter);
-                    fastScroller.setRecyclerView(rvContact);
-                    fastScroller.setViewsToUse(R.layout.recycler_view_fast_scroller__fast_scroller, R.id.fastscroller_bubble, R.id.fastscroller_handle);
                     break;
                 case BACK_UP_SUCCEED:
                     Snackbar.make(mFab, "Back-up succeeds!", Snackbar.LENGTH_SHORT).
@@ -135,6 +137,9 @@ public class ContactFragment extends Fragment {
     }
 
     private void initView() {
+        fastScroller.setRecyclerView(rvContact);
+        fastScroller.setSectionIndicator(sectionTitleIndicator);
+        rvContact.setOnScrollListener(fastScroller.getOnScrollListener());
         vcardList = new ArrayList<>();
         ops=new ArrayList<>();
         absFormat=new AbsoluteDateFormat(getActivity(), NaturalDateFormat.DATE);
@@ -153,24 +158,7 @@ public class ContactFragment extends Fragment {
                 }
             }
         });
-        rvContact.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false) {
-            @Override
-            public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
-                super.onLayoutChildren(recycler, state);
-                final int firstVisibleItemPosition = findFirstVisibleItemPosition();
-                if (firstVisibleItemPosition != 0) {
-                    // this avoids trying to handle un-needed calls
-                    if (firstVisibleItemPosition == -1)
-                        //not initialized, or no items shown, so hide fast-scroller
-                        fastScroller.setVisibility(View.GONE);
-                    return;
-                }
-                final int lastVisibleItemPosition = findLastVisibleItemPosition();
-                int itemsShown = lastVisibleItemPosition - firstVisibleItemPosition + 1;
-                //if all items are shown, hide the fast-scroller
-                fastScroller.setVisibility(contactAdapter.getItemCount() > itemsShown ? View.VISIBLE : View.GONE);
-            }
-        });
+        rvContact.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         ((MainActivity)getActivity()).setOnDeleteItemClickListner(new MainActivity.onDeleteItemClick() {
             @Override

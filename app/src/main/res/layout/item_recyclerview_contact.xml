@@ -13,8 +13,8 @@
 		android:gravity="center"
 		android:textColor="@color/colorAccent"
 		android:textSize="30sp"
-		android:layout_width="46dp"
-		android:layout_height="46dp"
+		android:layout_width="40dp"
+		android:layout_height="40dp"
 		app:layout_constraintTop_toTopOf="parent"
 		app:layout_constraintBottom_toBottomOf="parent"
 		app:layout_constraintVertical_bias="0.512"
@@ -25,8 +25,8 @@
 	<com.weikuo.elemenzhang.phonebookwk.view.customview.RoundedLetterView
 		android:id="@+id/rlv_name_view"
 		xmlns:app="http://schemas.android.com/apk/res-auto"
-		android:layout_width="46dp"
-		android:layout_height="46dp"
+		android:layout_width="40dp"
+		android:layout_height="40dp"
 		android:layout_marginLeft="10dp"
 		android:layout_marginStart="10dp"
 		android:layout_marginTop="8dp"
@@ -35,7 +35,7 @@
 		app:layout_constraintVertical_bias="0.388"
 		app:rlv_backgroundColorValue="@color/colorPrimary"
 		app:rlv_titleColor="@android:color/white"
-		app:rlv_titleSize="35dp"
+		app:rlv_titleSize="25dp"
 		app:rlv_titleText="A"
 		app:layout_constraintLeft_toRightOf="@+id/tv_title"
 		/>
@@ -50,7 +50,7 @@
 		app:layout_constraintRight_toRightOf="parent"
 		app:layout_constraintLeft_toRightOf="@+id/rlv_name_view"
 		android:layout_marginLeft="8dp"
-		android:textSize="18sp"
+		android:textSize="16sp"
 		app:layout_constraintHorizontal_bias="0.109"
 		app:layout_constraintVertical_bias="0.506"/>
 	<CheckBox

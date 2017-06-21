@@ -8,11 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import com.github.tamir7.contacts.Contact;
 import com.weikuo.elemenzhang.phonebookwk.R;
-import com.weikuo.elemenzhang.phonebookwk.view.customview.RecyclerViewFastScroller;
 import com.weikuo.elemenzhang.phonebookwk.view.customview.RoundedLetterView;
 
 import java.util.ArrayList;
@@ -27,8 +27,7 @@ import butterknife.ButterKnife;
  * Created by elemenzhang on 2017/6/12.
  */
 
-public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHolder>
-        implements RecyclerViewFastScroller.BubbleTextGetter {
+public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHolder> implements SectionIndexer {
     private Context context;
     private List<Contact> contactList;
     private SparseArray<Boolean> checkBoxStateArray = new SparseArray<>();
@@ -144,13 +143,6 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
         super.onDetachedFromRecyclerView(recyclerView);
     }
 
-    @Override
-    public String getTextToShowInBubble(int pos) {
-        if (contactList.get(pos).getGivenName() != null)
-            return Character.toString(contactList.get(pos).getGivenName().charAt(0));
-        else
-            return "";
-    }
 
     public List<Contact> filter(List<Contact> contactList, String query) {
         query = query.toLowerCase();
@@ -179,6 +171,28 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
         contactList = new ArrayList<>();
         contactList.addAll(sortedContactList);
         notifyDataSetChanged();
+    }
+
+    @Override
+    public Object[] getSections() {
+        String nameArrary[]=new String[contactList.size()];
+        for (int i = 0; i < nameArrary.length; i++) {
+            nameArrary[i]=contactList.get(i).getGivenName();
+        }
+        return nameArrary;
+    }
+
+    @Override
+    public int getPositionForSection(int sectionIndex) {
+        return 0;
+    }
+
+    @Override
+    public int getSectionForPosition(int position) {
+        if (position>=contactList.size()){
+            position=contactList.size()-1;
+        }
+        return position;
     }
 
 
