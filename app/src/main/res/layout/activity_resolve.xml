@@ -17,8 +17,10 @@
 		android:id="@+id/rv_archives_contact"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:layout_below="@+id/toolbar"
-		android:layout_alignParentStart="true"/>
+		android:layout_above="@+id/btn_restore"
+		android:layout_alignParentStart="true"
+		android:layout_marginBottom="3dp"
+		android:layout_below="@+id/toolbar"/>
 
 	<Button
 		android:id="@+id/btn_restore"
@@ -26,7 +28,7 @@
 		android:layout_height="48dp"
 		android:layout_alignParentBottom="true"
 		android:layout_margin="12dp"
-		android:background="@color/colorPrimary"
+		android:background="@drawable/shape_solid_button"
 		android:text="Restore"
 		android:textColor="@android:color/white"/>
 </RelativeLayout>

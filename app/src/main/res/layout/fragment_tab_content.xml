@@ -9,7 +9,8 @@
 		android:id="@+id/rv_contact"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:layout_above="@+id/btn_backup"/>
+		android:layout_above="@+id/btn_backup"
+		android:layout_marginBottom="3dp"/>
 
 	<xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller
 		android:id="@+id/fast_scroller"
@@ -35,61 +36,78 @@
 		android:id="@+id/btn_backup"
 		android:layout_width="match_parent"
 		android:layout_height="48dp"
+		android:layout_alignEnd="@+id/fast_scroller"
 		android:layout_alignParentBottom="true"
-		android:layout_margin="12dp"
-		android:background="@color/colorPrimary"
+		android:layout_marginBottom="14dp"
+		android:layout_marginLeft="12dp"
+		android:layout_marginRight="12dp"
+		android:enabled="false"
+		android:background="@drawable/btn_backup_selector"
 		android:text="Backup"
-		android:textColor="@android:color/white"/>
+		android:textAllCaps="false"
+		android:textColor="@android:color/white"
+		android:textSize="18sp"/>
 
 	<RelativeLayout
+		android:visibility="gone"
 		android:id="@+id/rl_bottommenu"
 		android:layout_width="match_parent"
-		android:layout_height="100dp"
-		android:layout_alignParentBottom="true"
-		android:background="@android:color/white"
-		android:visibility="gone">
+		android:layout_height="match_parent"
+		android:background="#5f000000"
+		android:clickable="true"
+		>
 
-		<RelativeLayout
-			android:layout_width="match_parent"
+		<LinearLayout
+			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_marginLeft="16dp"
-			android:layout_marginRight="16dp"
-			android:layout_marginTop="8dp"
-			android:orientation="horizontal">
-
-			<TextView
-				android:id="@+id/tv_restore"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="Restore: "/>
-
-			<TextView
-				android:id="@+id/tv_itemnum"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_toRightOf="@+id/tv_restore"
-				android:text="0 items"/>
-
-			<TextView
-				android:id="@+id/tv_percent"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_alignParentRight="true"
-				android:layout_gravity="bottom"
-				android:layout_marginRight="16dp"
-				android:text="0%"/>
-
-		</RelativeLayout>
-
-
-		<Button
-			android:id="@+id/btn_done"
-			android:layout_width="match_parent"
-			android:layout_height="48dp"
 			android:layout_alignParentBottom="true"
-			android:layout_margin="12dp"
-			android:text="Done"/>
+			android:background="@android:color/white"
+			android:orientation="vertical">
 
+			<RelativeLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginLeft="16dp"
+				android:layout_marginRight="16dp"
+				android:layout_marginTop="8dp"
+				>
+
+				<TextView
+					android:id="@+id/tv_restore"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="Restore: "/>
+
+				<TextView
+					android:id="@+id/tv_itemnum"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_toRightOf="@+id/tv_restore"
+					android:text="0 items"/>
+
+				<TextView
+					android:id="@+id/tv_percent"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_alignParentRight="true"
+					android:layout_gravity="bottom"
+					android:layout_marginRight="16dp"
+					android:text="0%"/>
+
+			</RelativeLayout>
+
+
+			<Button
+				android:id="@+id/btn_done"
+				android:layout_width="match_parent"
+				android:background="@drawable/shape_button"
+				android:textColor="@color/colorPrimary"
+				android:layout_height="48dp"
+				android:layout_margin="12dp"
+				android:text="Done"/>
+
+		</LinearLayout>
 	</RelativeLayout>
+
 
 </RelativeLayout>

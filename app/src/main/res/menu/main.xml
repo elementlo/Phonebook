@@ -5,24 +5,25 @@
 
 	<item
 		android:id="@+id/item_search"
-		android:orderInCategory="0"
 		android:icon="@drawable/ic_search_white"
+		android:orderInCategory="0"
 		android:title="@string/action_settings"
 		app:actionViewClass="android.support.v7.widget.SearchView"
 		app:showAsAction="always"/>
 	<item
 		android:id="@+id/item_delete"
-	    android:orderInCategory="0"
-	    android:icon="@drawable/ic_delete"
-	    android:title="delete"
-	    app:showAsAction="always"
+		android:icon="@mipmap/ic_delete"
+		android:orderInCategory="0"
+		android:title="delete"
+		app:showAsAction="always"
 		/>
 
 	<item
 		android:id="@+id/item_checkall"
+		android:actionViewClass="android.widget.CheckBox"
+		android:icon="@drawable/ic_select_all"
 		android:orderInCategory="0"
 		android:title="CheckAll"
-		android:icon="@drawable/ic_select_all"
 		app:actionLayout="@layout/custom_checkbox"
 		app:showAsAction="always"/>
 </menu>

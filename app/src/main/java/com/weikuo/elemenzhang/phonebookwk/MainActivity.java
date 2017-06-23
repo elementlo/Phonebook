@@ -1,5 +1,6 @@
 package com.weikuo.elemenzhang.phonebookwk;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -17,13 +18,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.RelativeLayout;
 
-import com.github.tamir7.contacts.Contact;
-import com.orhanobut.logger.Logger;
+import com.weikuo.elemenzhang.phonebookwk.adapter.ContactAdapter;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContentPagerAdapter;
 import com.weikuo.elemenzhang.phonebookwk.controller.ArchiveFragment;
 import com.weikuo.elemenzhang.phonebookwk.controller.BaseActivity;
 import com.weikuo.elemenzhang.phonebookwk.controller.ContactFragment;
+import com.weikuo.elemenzhang.phonebookwk.controller.StorageActivity;
+import com.weikuo.elemenzhang.phonebookwk.utils.GeneralTools;
+import com.weikuo.elemenzhang.phonebookwk.view.customview.MyViewPager;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,14 +44,15 @@ public class MainActivity extends BaseActivity
     @BindView(R.id.tl_maintab)
     TabLayout mainTablayout;
     @BindView(R.id.vp_mainpager)
-    ViewPager mViewpager;
+    MyViewPager mViewpager;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
     @BindView(R.id.drawer_layout)
     DrawerLayout drawer;
     @BindView(R.id.nav_view)
     NavigationView navigationView;
-    private CheckBox cbCheckAll;
+    private RelativeLayout toStorage;
+    private ActionBarDrawerToggle toggle;
 
     private List<String> tabIndicators;
     private List<Fragment> tabFragments;
@@ -54,20 +63,21 @@ public class MainActivity extends BaseActivity
     private ContentPagerAdapter pagerAdapter;
     private onDeleteItemClick onDeleteItemClick;
     private onDeleteArchClick onDeleteArchClick;
+    private boolean isCheckMode = false;
 
-    public void setOnDeleteItemClickListner(onDeleteItemClick onDeleteItemClick){
-        this.onDeleteItemClick=onDeleteItemClick;
+    public void setOnDeleteItemClickListner(onDeleteItemClick onDeleteItemClick) {
+        this.onDeleteItemClick = onDeleteItemClick;
     }
 
-    public void setOnDeleteArchClick(onDeleteArchClick onDeleteArchClick){
-        this.onDeleteArchClick=onDeleteArchClick;
+    public void setOnDeleteArchClick(onDeleteArchClick onDeleteArchClick) {
+        this.onDeleteArchClick = onDeleteArchClick;
     }
 
-    public interface onDeleteItemClick{
+    public interface onDeleteItemClick {
         void onItemClick();
     }
 
-    public interface onDeleteArchClick{
+    public interface onDeleteArchClick {
         void onArchItemClick();
     }
 
@@ -82,8 +92,20 @@ public class MainActivity extends BaseActivity
         initTabContent();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
     private void initTabContent() {
-        tabFragments = new ArrayList<Fragment>();
+        tabFragments = new ArrayList<>();
         tabIndicators = new ArrayList<>();
         contactFragment = new ContactFragment();
         archiveFragment = new ArchiveFragment();
@@ -106,6 +128,8 @@ public class MainActivity extends BaseActivity
             @Override
             public void onPageSelected(int position) {
                 currentPage = position;
+                mViewpager.setScroll(true);
+                cancelCheckMode();
                 invalidateOptionsMenu();
             }
 
@@ -117,11 +141,20 @@ public class MainActivity extends BaseActivity
     }
 
     private void initView() {
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        mViewpager.setScroll(true);
+        toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+        View headerView = navigationView.getHeaderView(0);
+        toStorage = (RelativeLayout) headerView.findViewById(R.id.ll_storage);
+        toStorage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, StorageActivity.class));
+            }
+        });
     }
 
     @Override
@@ -130,7 +163,11 @@ public class MainActivity extends BaseActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            if (isCheckMode) {
+                cancelCheckMode();
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
@@ -138,13 +175,12 @@ public class MainActivity extends BaseActivity
     public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        cbCheckAll = (CheckBox) menu.findItem(R.id.item_checkall).getActionView();
 
         SearchView searchView = (SearchView) menu.findItem(R.id.item_search).getActionView();
+
         searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                menu.findItem(R.id.item_delete).setVisible(false);
                 menu.findItem(R.id.item_checkall).setVisible(false);
             }
         });
@@ -157,11 +193,8 @@ public class MainActivity extends BaseActivity
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (currentPage == 0 && contactFragment.getContactAdapter() != null &&
-                        contactFragment.getContactList() != null) {
-                    List<Contact> filterContacts = contactFragment.getContactAdapter().
-                            filter(contactFragment.getContactList(), newText);
-                    contactFragment.getContactAdapter().setFilter(filterContacts);
+                if (currentPage == 0 && contactFragment.getContactAdapter() != null) {
+                    contactFragment.getContactAdapter().filter(newText);
                 } else {
 
                 }
@@ -172,8 +205,8 @@ public class MainActivity extends BaseActivity
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                menu.findItem(R.id.item_delete).setVisible(true);
                 menu.findItem(R.id.item_checkall).setVisible(true);
+                contactFragment.getContactAdapter().resetList();
                 return false;
             }
         });
@@ -187,30 +220,49 @@ public class MainActivity extends BaseActivity
                 SparseArray array = contactFragment.getContactAdapter().getCheckBoxStateArray();
                 if (array != null) {
                     if (isChecked) {
-                        for (int i = 0; i < array.size(); i++) {
-                            array.put(i, true);
-                        }
-                        //ContactAdapter.checkedVolume=array.size();
+                        EventBus.getDefault().post(array.size()+"");
+                        checkAll(array);
                     } else {
-                        for (int i = 0; i < array.size(); i++) {
-                            array.put(i, false);
-                        }
-                        //ContactAdapter.checkedVolume=0;
+                        EventBus.getDefault().post(0+"");
+                        cancelCheckMode();
                     }
-                    contactFragment.getContactAdapter().setCheckBoxStateArray(array);
                 }
             }
         });
         return true;
     }
 
+    public void checkAll(SparseArray array) {
+        for (int i = 0; i < array.size(); i++) {
+            array.put(i, true);
+            ContactAdapter.SUM_NUM_CHECK = array.size();
+        }
+        checkMode(array.size());
+        contactFragment.getContactAdapter().setCheckBoxStateArray(array);
+
+    }
+
+    public void cancelCheck(SparseArray array) {
+        for (int i = 0; i < array.size(); i++) {
+            array.put(i, false);
+            ContactAdapter.SUM_NUM_CHECK = 0;
+            //cancelCheckMode();
+        }
+        contactFragment.getContactAdapter().setCheckBoxStateArray(array);
+    }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (currentPage == 1) {
             menu.findItem(R.id.item_checkall).setVisible(false);
-        } else
+            menu.findItem(R.id.item_delete).setVisible(true);
+            menu.findItem(R.id.item_search).setVisible(false);
+        } else {
             menu.findItem(R.id.item_checkall).setVisible(true);
+            menu.findItem(R.id.item_delete).setVisible(false);
+            menu.findItem(R.id.item_search).setVisible(true);
+        }
+
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -220,13 +272,13 @@ public class MainActivity extends BaseActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (currentPage==0){
+        if (currentPage == 0) {
             if (id == R.id.item_delete) {
                 onDeleteItemClick.onItemClick();
                 return true;
             }
-        }else {
-            if (id==R.id.item_delete){
+        } else {
+            if (id == R.id.item_delete) {
                 onDeleteArchClick.onArchItemClick();
                 return true;
             }
@@ -235,24 +287,13 @@ public class MainActivity extends BaseActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.nav_manage) {
+            GeneralTools.socialShareApks(this);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -260,10 +301,56 @@ public class MainActivity extends BaseActivity
         return true;
     }
 
-/*    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onCheckedVolume(Boolean checkVolume){
-        if (cbCheckAll.isChecked()){
-            cbCheckAll.setChecked(false);
+    public MyViewPager getViewPager() {
+        return mViewpager;
+    }
+
+    public void checkMode(int number) {
+        isCheckMode = true;
+        toggle.setDrawerIndicatorEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.getMenu().findItem(R.id.item_delete).setVisible(true);
+        toolbar.getMenu().findItem(R.id.item_search).setVisible(false);
+        toolbar.setTitle(number + " selected");
+        toggle.setToolbarNavigationClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((CheckBox) toolbar.getMenu().findItem(R.id.item_checkall).getActionView()).setChecked(false);
+                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                toggle.setDrawerIndicatorEnabled(true);
+                toolbar.getMenu().findItem(R.id.item_delete).setVisible(false);
+                toolbar.getMenu().findItem(R.id.item_search).setVisible(true);
+                toolbar.setTitle(getApplication().getApplicationInfo().labelRes);
+                SparseArray array = contactFragment.getContactAdapter().getCheckBoxStateArray();
+                cancelCheck(array);
+            }
+        });
+    }
+
+    public void cancelCheckMode() {
+        if (getSupportActionBar() == null) {
+            return;
         }
-    }*/
+        isCheckMode = false;
+        ((CheckBox) toolbar.getMenu().findItem(R.id.item_checkall).getActionView()).setChecked(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        toggle.setDrawerIndicatorEnabled(true);
+        toolbar.getMenu().findItem(R.id.item_delete).setVisible(false);
+        toolbar.getMenu().findItem(R.id.item_search).setVisible(true);
+        toolbar.setTitle(getApplication().getApplicationInfo().labelRes);
+        SparseArray array = contactFragment.getContactAdapter().getCheckBoxStateArray();
+        cancelCheck(array);
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCheckedNum(String number) {
+        if (toolbar != null) {
+            if (Integer.parseInt(number) > 0) {
+                checkMode(Integer.parseInt(number));
+            } else {
+                cancelCheckMode();
+            }
+        }
+    }
 }

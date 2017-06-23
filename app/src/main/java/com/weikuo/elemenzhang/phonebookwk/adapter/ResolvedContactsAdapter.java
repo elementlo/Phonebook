@@ -1,6 +1,7 @@
 package com.weikuo.elemenzhang.phonebookwk.adapter;
 
 import android.content.Context;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -62,6 +63,12 @@ public class ResolvedContactsAdapter extends RecyclerView.Adapter<ResolvedContac
             checkBoxStateArray.put(position, false);
         }
         holder.cbContact.setChecked(checkBoxStateArray.get(position));
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setSelectItem(position);
+            }
+        });
     }
 
     @Override
@@ -84,6 +91,15 @@ public class ResolvedContactsAdapter extends RecyclerView.Adapter<ResolvedContac
         }
     }
 
+    public void setSelectItem(int position) {
+        if (checkBoxStateArray.get(position)) {
+            checkBoxStateArray.put(position, false);
+        } else {
+            checkBoxStateArray.put(position, true);
+        }
+        notifyItemChanged(position);
+    }
+
     static class MyViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.tv_contactname)
         TextView contactName;
@@ -93,6 +109,7 @@ public class ResolvedContactsAdapter extends RecyclerView.Adapter<ResolvedContac
         RoundedLetterView roundedLetterView;
         @BindView(R.id.tv_title)
         TextView tvTitle;
+        @BindView(R.id.rv_item)ConstraintLayout itemView;
 
         public MyViewHolder(View itemView) {
             super(itemView);

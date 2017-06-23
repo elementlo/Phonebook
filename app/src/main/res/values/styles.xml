@@ -25,4 +25,5 @@
 		<item name="android:button">@drawable/checkbox_style</item>
 		<item name="android:maxHeight">10dp</item>
 	</style>
+	
 </resources>

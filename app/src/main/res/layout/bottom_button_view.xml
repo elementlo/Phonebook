@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Button
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bottom_opt_btn"
+    android:layout_width="match_parent"
+    android:layout_height="43dp"
+    android:elevation="2dp"
+    android:textSize="18sp"
+    android:layout_gravity="center"
+    android:text="@string/backup"
+    android:textAllCaps="false"
+    android:textColor="@drawable/btn_bottom_text_color"
+    android:gravity="center"/>
+

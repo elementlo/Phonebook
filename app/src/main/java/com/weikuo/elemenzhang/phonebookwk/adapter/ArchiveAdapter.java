@@ -28,7 +28,7 @@ public class ArchiveAdapter extends RecyclerView.Adapter<ArchiveAdapter.MyViewHo
     private Context context;
 
     private List<Archives> archivesList;
-    public static int archiveOption=-1;
+    public static int archiveOption = 0;
 
     private OnItemClickListner onItemClickListner;
 
@@ -63,16 +63,20 @@ public class ArchiveAdapter extends RecyclerView.Adapter<ArchiveAdapter.MyViewHo
                     onItemClickListner.onItemClick(position);
                 }
             });
+            if (position == 0) {
+                lastCheckedRB = holder.cbArchive;
+                lastCheckedRB.setChecked(true);
+            }
             holder.cbArchive.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked){
-                        archiveOption=position;
-                        RadioButton checked_rb = (RadioButton) buttonView;
-                        if(lastCheckedRB != null){
+                    if (isChecked) {
+                        archiveOption = position;
+                        RadioButton checkedRb = (RadioButton) buttonView;
+                        if (lastCheckedRB != null) {
                             lastCheckedRB.setChecked(false);
                         }
-                        lastCheckedRB = checked_rb;
+                        lastCheckedRB = checkedRb;
                     }
                 }
             });

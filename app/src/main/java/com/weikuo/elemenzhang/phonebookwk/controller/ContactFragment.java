@@ -2,8 +2,8 @@ package com.weikuo.elemenzhang.phonebookwk.controller;
 
 import android.Manifest;
 import android.content.ContentProviderOperation;
+import android.content.DialogInterface;
 import android.content.OperationApplicationException;
-import android.icu.util.IndianCalendar;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -14,6 +14,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
@@ -29,9 +30,10 @@ import com.github.tamir7.contacts.Contacts;
 import com.weikuo.elemenzhang.phonebookwk.MainActivity;
 import com.weikuo.elemenzhang.phonebookwk.R;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContactAdapter;
+import com.weikuo.elemenzhang.phonebookwk.utils.ACache;
+import com.weikuo.elemenzhang.phonebookwk.utils.ContactsTools;
 import com.weikuo.elemenzhang.phonebookwk.utils.GeneralTools;
 import com.weikuo.elemenzhang.phonebookwk.view.customview.ColorGroupSectionTitleIndicator;
-import com.weikuo.elemenzhang.phonebookwk.view.customview.RecyclerViewFastScroller;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -40,7 +42,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -49,12 +50,8 @@ import butterknife.OnClick;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.VCardVersion;
-import ezvcard.property.Address;
-import ezvcard.property.StructuredName;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
-import tk.zielony.naturaldateformat.AbsoluteDateFormat;
-import tk.zielony.naturaldateformat.NaturalDateFormat;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 /**
@@ -64,15 +61,20 @@ import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScrol
 public class ContactFragment extends Fragment {
     @BindView(R.id.rv_contact)
     RecyclerView rvContact;
-    @BindView(R.id.fast_scroller)VerticalRecyclerViewFastScroller fastScroller;
+    @BindView(R.id.fast_scroller)
+    VerticalRecyclerViewFastScroller fastScroller;
     @BindView(R.id.btn_backup)
     Button mFab;
-    @BindView(R.id.fast_scroller_section_title_indicator)ColorGroupSectionTitleIndicator sectionTitleIndicator;
-
-    @BindView(R.id.rl_bottommenu)RelativeLayout bottomMenu;
-    @BindView(R.id.tv_itemnum)TextView tvItemNum;
-    @BindView(R.id.tv_percent)TextView tvPercent;
-    @BindView(R.id.btn_done)Button btnDone;
+    @BindView(R.id.fast_scroller_section_title_indicator)
+    ColorGroupSectionTitleIndicator sectionTitleIndicator;
+    @BindView(R.id.rl_bottommenu)
+    RelativeLayout bottomMenu;
+    @BindView(R.id.tv_itemnum)
+    TextView tvItemNum;
+    @BindView(R.id.tv_percent)
+    TextView tvPercent;
+    @BindView(R.id.btn_done)
+    Button btnDone;
 
     private List<Contact> contactList;
     private ArrayList<ContentProviderOperation> ops;
@@ -83,9 +85,10 @@ public class ContactFragment extends Fragment {
     private final int INIT_CANTACT_LIST = 0;
     private final int BACK_UP_SUCCEED = 1;
     private final int BACK_UP_FAILED = 2;
-    private final int BROADCAST_ARCHIVE=3;
-    private final int SUBMIT_SUM_CHECK=4;
-    private AbsoluteDateFormat absFormat;
+    private final int BROADCAST_ARCHIVE = 3;
+    private final int SUBMIT_SUM_CHECK = 4;
+    private ACache cache;
+
 
     private Handler mHandler = new Handler() {
         @Override
@@ -99,15 +102,19 @@ public class ContactFragment extends Fragment {
                 case BACK_UP_SUCCEED:
                     Snackbar.make(mFab, "Back-up succeeds!", Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
-                    ((MainActivity) getActivity()).dismissProgressbar();
+                    ((MainActivity) getActivity()).dismissProgressdialog();
+                    ((MainActivity) getActivity()).getViewPager().setScroll(true);
                     EventBus.getDefault().post(BROADCAST_ARCHIVE);
                     break;
                 case BACK_UP_FAILED:
                     Snackbar.make(mFab, "Back-up fails!", Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
-                    ((MainActivity) getActivity()).dismissProgressbar();
+                    ((MainActivity) getActivity()).getViewPager().setScroll(true);
+                    ((MainActivity) getActivity()).dismissProgressdialog();
                     break;
                 case SUBMIT_SUM_CHECK:
+                    tvItemNum.setText(msg.arg1 + " items");
+                    tvPercent.setText("100%");
                     break;
             }
         }
@@ -137,16 +144,20 @@ public class ContactFragment extends Fragment {
     }
 
     private void initView() {
+        ((MainActivity) getActivity()).shoProgressdialog(getActivity());
+        cache = ACache.get(getActivity());
+
         fastScroller.setRecyclerView(rvContact);
         fastScroller.setSectionIndicator(sectionTitleIndicator);
         rvContact.setOnScrollListener(fastScroller.getOnScrollListener());
-        vcardList = new ArrayList<>();
-        ops=new ArrayList<>();
-        absFormat=new AbsoluteDateFormat(getActivity(), NaturalDateFormat.DATE);
+        rvContact.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        ops = new ArrayList<>();
+        mFab.setEnabled(false);
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((MainActivity) getActivity()).showProgressbar();
+                ((MainActivity) getActivity()).shoProgressdialog(getActivity());
                 if (contactAdapter != null) {
                     checkBoxStateArray = contactAdapter.getCheckBoxStateArray();
                     if (checkBoxStateArray == null) {
@@ -158,21 +169,40 @@ public class ContactFragment extends Fragment {
                 }
             }
         });
-        rvContact.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        ((MainActivity)getActivity()).setOnDeleteItemClickListner(new MainActivity.onDeleteItemClick() {
+        ((MainActivity) getActivity()).setOnDeleteItemClickListner(new MainActivity.onDeleteItemClick() {
             @Override
             public void onItemClick() {
-                List<String> transport=new ArrayList<String>();
+                final List<String> transport = new ArrayList<String>();
                 checkBoxStateArray = contactAdapter.getCheckBoxStateArray();
-                for (int i =0;i<checkBoxStateArray.size();i++){
-                    if (checkBoxStateArray.get(i)){
-                        transport.add(contactList.get(i).getId()+"");
+                for (int i = 0; i < checkBoxStateArray.size(); i++) {
+                    if (checkBoxStateArray.get(i)) {
+                        transport.add(contactList.get(i).getId() + "");
                     }
                 }
+                AlertDialog dialog = new AlertDialog.Builder(getActivity())
+                        .setTitle("Delete Confirm")
+                        .setMessage("Are you sure to delete the selected " + transport.size() + " item(s)?")
+                        .setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ((MainActivity) getActivity()).cancelCheckMode();
+                                deletContact(transport);
+                            }
+                        })
+                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create();
+                dialog.show();
+            }
 
+            private void deletContact(List<String> transport) {
                 for (int i = 0; i < transport.size(); i++) {
-                    args=new String[]{transport.get(i)};
+                    args = new String[]{transport.get(i)};
                     ops.add(ContentProviderOperation.newDelete(ContactsContract.RawContacts.CONTENT_URI)
                             .withSelection(ContactsContract.RawContacts.CONTACT_ID + "=?", args).build());
                 }
@@ -182,9 +212,8 @@ public class ContactFragment extends Fragment {
                     e.printStackTrace();
                 } catch (OperationApplicationException e) {
                     e.printStackTrace();
-                }
-                finally {
-                    if (contactList!=null){
+                } finally {
+                    if (contactList != null) {
                         contactList.clear();
                         ContactFragmentPermissionsDispatcher.
                                 requestContactPermissionWithCheck(ContactFragment.this);
@@ -200,28 +229,28 @@ public class ContactFragment extends Fragment {
             @Override
             public void run() {
                 try {
+                    vcardList = new ArrayList<>();
                     for (int i = 0; i < checkBoxStateArray.size(); i++) {
                         if (checkBoxStateArray.get(i)) {
-                            VCard vcard = createVCard(contactList.get(i));
+                            VCard vcard = ContactsTools.createVCard(contactList.get(i));
                             vcard.validate(VCardVersion.V4_0);
                             vcardList.add(vcard);
-                            Message message = mHandler.obtainMessage();
-                            message.what=SUBMIT_SUM_CHECK;
-                            message.arg1=vcardList.size();
-                            mHandler.sendMessage(message);
                         }
                     }
-                    String date=absFormat.format(new Date().getTime());
-
-                    File file = new File(Environment.getExternalStorageDirectory() + "/PHONEBOOK");
+                    Message messageSum = mHandler.obtainMessage();
+                    messageSum.arg1 = vcardList.size();
+                    messageSum.what = SUBMIT_SUM_CHECK;
+                    mHandler.sendMessage(messageSum);
+                    File file;
+                    if (cache.getAsBinary("path") == null) {
+                        file = new File(Environment.getExternalStorageDirectory() + "/Contact_Backup");
+                    } else {
+                        file = new File(cache.getAsString("path"));
+                    }
                     if (!file.exists()) {
                         file.mkdir();
                     }
-                    File bookFile = new File(file + "/"+date+".vcf");
-                    if (bookFile.exists()){
-                        bookFile=GeneralTools.generateFileName(file,date);
-                    }
-                    Ezvcard.write(vcardList).go(bookFile);
+                    Ezvcard.write(vcardList).go(GeneralTools.formatDate(file));
                     Message messageSuc = mHandler.obtainMessage();
                     messageSuc.what = BACK_UP_SUCCEED;
                     mHandler.sendMessage(messageSuc);
@@ -241,6 +270,7 @@ public class ContactFragment extends Fragment {
             @Override
             public void run() {
                 contactList = Contacts.getQuery().find();
+
                 Message message = mHandler.obtainMessage();
                 message.what = INIT_CANTACT_LIST;
                 mHandler.sendMessage(message);
@@ -263,51 +293,28 @@ public class ContactFragment extends Fragment {
         return contactList;
     }
 
-    private static VCard createVCard(Contact contact) throws IOException {
-        VCard vcard = new VCard();
-        StructuredName n = new StructuredName();
-        n.setFamily(contact.getFamilyName());
-        n.setGiven(contact.getGivenName());
-        n.getPrefixes().add(contact.getDisplayName());
-        vcard.setStructuredName(n);
-        vcard.setOrganization(contact.getCompanyName());
-
-        if (contact.getAddresses() != null && contact.getAddresses().size() != 0) {
-            Address adr = new Address();
-            adr.setStreetAddress(contact.getAddresses().get(0).getStreet());
-            adr.setLocality(contact.getAddresses().get(0).getCity());
-            adr.setPostalCode(contact.getAddresses().get(0).getPostcode());
-            adr.setCountry(contact.getAddresses().get(0).getCountry());
-            adr.setRegion(contact.getAddresses().get(0).getRegion());
-            adr.setLabel(contact.getAddresses().get(0).getLabel());
-            vcard.addAddress(adr);
-        }
-
-        if (contact.getEmails() != null && contact.getEmails().size() != 0) {
-            for (int i = 0; i < contact.getEmails().size(); i++) {
-                vcard.addEmail(contact.getEmails().get(i).getAddress());
-            }
-        }
-
-        if (contact.getPhoneNumbers() != null && contact.getPhoneNumbers().size() != 0) {
-            for (int i = 0; i < contact.getPhoneNumbers().size(); i++) {
-                vcard.addTelephoneNumber(contact.getPhoneNumbers().get(i).getNumber());
-            }
-        }
-        return vcard;
-    }
 
     @OnClick(R.id.btn_done)
-    public void doneClick(){
+    public void doneClick() {
         bottomMenu.setVisibility(View.GONE);
         mFab.setVisibility(View.VISIBLE);
+        ((MainActivity) getActivity()).cancelCheckMode();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAchiveMessage(Integer integer){
-        if (contactList!=null){
+    public void onAchiveMessage(Integer integer) {
+        if (contactList != null) {
             contactList.clear();
             ContactFragmentPermissionsDispatcher.requestContactPermissionWithCheck(this);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCheckMessage(String num) {
+        if (Integer.parseInt(num) > 0) {
+            mFab.setEnabled(true);
+        } else {
+            mFab.setEnabled(false);
         }
     }
 

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+	<android.support.v7.widget.Toolbar
+		android:id="@+id/toolbar"
+		android:layout_width="match_parent"
+		android:layout_height="?attr/actionBarSize"
+		android:background="?attr/colorPrimary"
+		android:theme="@style/toolbar_theme"
+		android:title="Backup to"
+		app:popupTheme="@style/AppTheme.PopupOverlay"/>
+
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="70dp">
+		<ImageView
+			android:layout_centerVertical="true"
+			android:id="@+id/iv_inter"
+			android:layout_marginLeft="16dp"
+			android:layout_width="35dp"
+			android:layout_height="35dp"
+			android:background="@drawable/ic_internal_storage"/>
+		<TextView
+			android:layout_centerVertical="true"
+			android:layout_toRightOf="@+id/iv_inter"
+			android:layout_marginLeft="16dp"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Internal Storage"/>
+
+		<RadioButton
+			android:id="@+id/rb_inter"
+			android:layout_marginRight="16dp"
+			android:layout_centerVertical="true"
+			android:layout_alignParentRight="true"
+			android:layout_gravity="right|end"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"/>
+	</RelativeLayout>
+
+	<RelativeLayout
+		android:visibility="gone"
+		android:id="@+id/rl_sdcard"
+		android:layout_width="match_parent"
+		android:layout_height="70dp">
+		<ImageView
+			android:layout_centerVertical="true"
+			android:id="@+id/iv_outer"
+			android:layout_marginLeft="16dp"
+			android:layout_width="35dp"
+			android:layout_height="35dp"
+			android:background="@drawable/ic_sd_card"/>
+		<TextView
+			android:layout_centerVertical="true"
+			android:layout_toRightOf="@+id/iv_outer"
+			android:layout_marginLeft="16dp"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="SD Card"/>
+
+		<RadioButton
+			android:checked="true"
+			android:id="@+id/rb_outer"
+			android:layout_marginRight="16dp"
+			android:layout_centerVertical="true"
+			android:layout_alignParentRight="true"
+			android:layout_gravity="right|end"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"/>
+	</RelativeLayout>
+	<TextView
+		android:id="@+id/tv_path"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text=""/>
+</LinearLayout>

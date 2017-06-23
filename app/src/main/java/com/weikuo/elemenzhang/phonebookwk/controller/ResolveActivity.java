@@ -36,24 +36,26 @@ public class ResolveActivity extends BaseActivity {
     Toolbar toolbar;
     @BindView(R.id.rv_archives_contact)
     RecyclerView rvArContact;
-    @BindView(R.id.btn_restore)Button btnRes;
+    @BindView(R.id.btn_restore)
+    Button btnRes;
 
     List<VCard> vcards;
     private SparseArray<Boolean> checkBoxStateArray;
     private String filePath = "";
-    private final int RESOLVE_FINISHIED=0;
-    private final int RESOLVE_SUB_SUCCEED=1;
+    private String fileName = "";
+    private final int RESOLVE_FINISHIED = 0;
+    private final int RESOLVE_SUB_SUCCEED = 1;
 
     ContactInfo.ContactHandler insertHandler = ContactInfo.ContactHandler.getInstance();
 
     private ResolvedContactsAdapter adapter;
-    private Handler handler=new Handler(){
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case RESOLVE_FINISHIED:
-                    adapter=new ResolvedContactsAdapter(ResolveActivity.this,vcards);
+                    adapter = new ResolvedContactsAdapter(ResolveActivity.this, vcards);
                     dismissProgressbar();
                     rvArContact.setLayoutManager(new LinearLayoutManager(ResolveActivity.this));
                     rvArContact.setAdapter(adapter);
@@ -74,12 +76,13 @@ public class ResolveActivity extends BaseActivity {
         ButterKnife.bind(this);
 
         filePath = getIntent().getStringExtra("filePath");
+        fileName=getIntent().getStringExtra("fileName");
         initView();
         resolveVCFTask();
     }
 
     private void initView() {
-        toolbar.setTitle("");
+        toolbar.setTitle(fileName);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         showProgressbar();
@@ -98,8 +101,8 @@ public class ResolveActivity extends BaseActivity {
                 File file = new File(filePath);
                 try {
                     vcards = Ezvcard.parse(file).all();
-                    Message message=handler.obtainMessage();
-                    message.what=RESOLVE_FINISHIED;
+                    Message message = handler.obtainMessage();
+                    message.what = RESOLVE_FINISHIED;
                     handler.sendMessage(message);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -109,19 +112,19 @@ public class ResolveActivity extends BaseActivity {
     }
 
     @OnClick(R.id.btn_restore)
-    public void onRestoreClick(){
-        checkBoxStateArray=adapter.getCheckBoxStateArray();
+    public void onRestoreClick() {
+        checkBoxStateArray = adapter.getCheckBoxStateArray();
         new Thread(new Runnable() {
             @Override
             public void run() {
                 for (int i = 0; i < checkBoxStateArray.size(); i++) {
-                    if (checkBoxStateArray.get(i)){
-                        insertHandler.addContacts(ResolveActivity.this,vcards.get(i));
-                        Message message=handler.obtainMessage();
-                        message.what=RESOLVE_SUB_SUCCEED;
-                        handler.sendMessage(message);
+                    if (checkBoxStateArray.get(i)) {
+                        insertHandler.addContacts(ResolveActivity.this, vcards.get(i));
                     }
                 }
+                Message message = handler.obtainMessage();
+                message.what = RESOLVE_SUB_SUCCEED;
+                handler.sendMessage(message);
             }
         }).start();
     }

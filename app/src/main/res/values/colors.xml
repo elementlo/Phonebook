@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<color name="colorPrimary">#3e50b4</color>
-	<color name="colorPrimaryDark">#303F9F</color>
-	<color name="colorAccent">#FF4081</color>
+	<color name="colorPrimary">#00a48e</color>
+	<color name="colorPrimaryDark">#0c0c0c</color>
+	<color name="colorAccent">#00a48e</color>
 	<color name="colorTabText">#7dffffff</color>
+	<color name="colorGrey">#5b5b5b</color>
+	<color name="button_text_color_disable">#7F000000</color>
+	<color name="text_hint_grey">#c8c8c8</color>
+	<color name="deep_aqua">#097c6d</color>
+	<color name="pinkAccent">#ef4481</color>
 </resources>

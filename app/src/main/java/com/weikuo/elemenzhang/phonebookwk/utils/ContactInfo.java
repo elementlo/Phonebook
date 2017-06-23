@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ezvcard.VCard;
+import ezvcard.property.Address;
 import ezvcard.property.Email;
 import ezvcard.property.Telephone;
 
@@ -266,7 +267,8 @@ public class ContactInfo {
                 for (Email email : emailList) {
                     values.clear();
                     values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
-                    values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+                    values.put(ContactsContract.RawContacts.Data.MIMETYPE,
+                            ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
                     // 设置录入的邮箱信息
                     values.put(ContactsContract.CommonDataKinds.Email.DATA, email.getValue());
                     if (email.getTypes() != null && email.getTypes().size() > 0) {
@@ -276,6 +278,24 @@ public class ContactInfo {
                     context.getContentResolver().insert(
                             ContactsContract.Data.CONTENT_URI, values);
                 }
+            }
+
+            List<Address> addressList = info.getAddresses();
+            if (addressList != null && addressList.size() > 0) {
+                values.clear();
+                values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
+                values.put(ContactsContract.Contacts.Data.MIMETYPE,
+                        ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
+                values.put(ContactsContract.CommonDataKinds.Organization.DATA, addressList.get(0).getExtendedAddressFull());
+                context.getContentResolver().insert(ContactsContract.Data.CONTENT_URI, values);
+            }
+
+            if (info.getNotes() != null || info.getNotes().size() > 0) {
+                values.clear();
+                values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
+                values.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE);
+                values.put(ContactsContract.CommonDataKinds.Note.DATA1, info.getNotes().get(0).getValue());
+                context.getContentResolver().insert(ContactsContract.Data.CONTENT_URI, values);
             }
 
 
