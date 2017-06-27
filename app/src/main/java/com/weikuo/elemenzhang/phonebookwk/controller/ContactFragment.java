@@ -25,6 +25,9 @@ import android.widget.Button;
 
 import com.github.tamir7.contacts.Contact;
 import com.github.tamir7.contacts.Contacts;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 import com.weikuo.elemenzhang.phonebookwk.MainActivity;
 import com.weikuo.elemenzhang.phonebookwk.R;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContactAdapter;
@@ -67,6 +70,7 @@ public class ContactFragment extends Fragment {
     @BindView(R.id.fast_scroller_section_title_indicator)
     ColorGroupSectionTitleIndicator sectionTitleIndicator;
     private CustomDialog dialog;
+    private InterstitialAd mInterstitialAd;
 
     private List<Contact> contactList;
     private ArrayList<ContentProviderOperation> ops;
@@ -132,6 +136,7 @@ public class ContactFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         initView();
+        initAd();
     }
 
     @Override
@@ -202,6 +207,28 @@ public class ContactFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private void initAd() {
+        mInterstitialAd = new InterstitialAd(getActivity());
+        mInterstitialAd.setAdUnitId("ca-app-pub-4981779028680185/4014682158");
+
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                requestNewInterstitial();
+            }
+        });
+
+        requestNewInterstitial();
+    }
+
+    private void requestNewInterstitial() {
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice("14B12B09C604EC8AE8978A8BD298578C")
+                .build();
+
+        mInterstitialAd.loadAd(adRequest);
     }
 
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -300,6 +327,9 @@ public class ContactFragment extends Fragment {
                     public void onClick(View v) {
                         mFab.setVisibility(View.VISIBLE);
                         dialog.cancel();
+                        if (mInterstitialAd.isLoaded()) {
+                            mInterstitialAd.show();
+                        }
                         ((MainActivity) getActivity()).cancelCheckMode();
                     }
                 });
