@@ -81,16 +81,23 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
     public void onBindViewHolder(MyViewHolder holder, final int position) {
         String name = contactList.get(position).getGivenName();
         String surname = contactList.get(position).getFamilyName();
-        if (name == null) {
+        if (name == null && surname != null) {
             name = surname;
-        }
-        if (name != null && surname != null) {
+        } else if (name != null && surname != null) {
             name = name + " " + surname;
+        } else if (name == null && surname == null) {
+            name = "";
         }
+
         if (name != null) {
+            int selection = 0;
             holder.contactName.setText(name);
-            holder.roundedLetterView.setTitleText(name.toUpperCase().charAt(0) + "");
-            int selection = name.charAt(0);
+            if (name.toUpperCase() != null && !name.toUpperCase().isEmpty()) {
+                holder.roundedLetterView.setTitleText(name.toUpperCase().charAt(0) + "");
+                selection = name.charAt(0);
+            } else {
+                holder.roundedLetterView.setTitleText("");
+            }
             int positionForSelection = getPositionForSelection(selection);
             if (position == positionForSelection) {
                 holder.tvTitle.setVisibility(View.VISIBLE);
@@ -175,18 +182,21 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
         final List<Contact> filteredModelList = new ArrayList<>();
         for (Contact person : backContactList) {
             String nameEn = null;
+            String nameFa = null;
             if (person.getGivenName() != null) {
                 nameEn = person.getGivenName().toLowerCase();
             }
-            String phoneEn = null;
-            if (person.getPhoneNumbers() != null) {
-                phoneEn = person.getPhoneNumbers().toString();
+            if (person.getFamilyName() != null) {
+                nameFa = person.getFamilyName().toLowerCase();
             }
-            /*if (person.getEmails() != null && person.getEmails().size() > 0) {
-                emailEn = person.getEmails().get(0).getAddress();
-            }*/
+
             if (nameEn != null) {
                 if (nameEn.contains(query)) {
+                    filteredModelList.add(person);
+                }
+            }
+            if (nameFa != null) {
+                if (nameFa.contains(query)) {
                     filteredModelList.add(person);
                 }
             }

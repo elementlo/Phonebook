@@ -17,7 +17,7 @@
 				android:id="@+id/tv_restore"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="Restore: "/>
+				android:text="Backed up: "/>
 
 			<TextView
 				android:id="@+id/tv_itemnum"

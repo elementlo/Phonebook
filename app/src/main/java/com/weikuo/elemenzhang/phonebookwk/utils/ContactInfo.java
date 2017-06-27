@@ -250,21 +250,24 @@ public class ContactInfo {
             values.put(ContactsContract.RawContacts.Data.RAW_CONTACT_ID, rawContactId);
             values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
             values.put(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, info.getStructuredName().getGiven());
+            if (info.getStructuredName().getFamily() != null) {
+                values.put(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, info.getStructuredName().getFamily());
+            }
+            if (info.getFormattedName() != null) {
+                values.put(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, info.getFormattedName().getValue());
+            }
             context.getContentResolver().insert(ContactsContract.Data.CONTENT_URI, values);
 
-            // 获取联系人电话信息
             /** 录入联系电话 */
             if (phoneList != null && phoneList.size() > 0) {
                 for (Telephone phoneInfo : phoneList) {
                     values.clear();
                     values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
                     values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
-                    // 设置录入联系人电话信息
                     values.put(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneInfo.getText());
                     if (phoneInfo.getTypes() != null && phoneInfo.getTypes().size() > 0) {
                         values.put(ContactsContract.CommonDataKinds.Phone.TYPE, phoneInfo.getTypes().get(0).getValue());
                     }
-                    // 往data表入电话数据
                     context.getContentResolver().insert(
                             ContactsContract.Data.CONTENT_URI, values);
                 }

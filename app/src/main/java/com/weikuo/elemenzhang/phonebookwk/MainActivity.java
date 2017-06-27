@@ -1,10 +1,15 @@
 package com.weikuo.elemenzhang.phonebookwk;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
@@ -19,6 +24,7 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.orhanobut.logger.Logger;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContactAdapter;
@@ -39,7 +45,10 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.RuntimePermissions;
 
+@RuntimePermissions
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     @BindView(R.id.tl_maintab)
@@ -53,7 +62,9 @@ public class MainActivity extends BaseActivity
     @BindView(R.id.nav_view)
     NavigationView navigationView;
     private RelativeLayout toStorage;
+    private TextView tvStorage;
     private ActionBarDrawerToggle toggle;
+    private View headerView;
 
     private List<String> tabIndicators;
     private List<Fragment> tabFragments;
@@ -132,7 +143,8 @@ public class MainActivity extends BaseActivity
                 mViewpager.setScroll(true);
                 if (position == 1) {
                     cancelCheckMode();
-                    EventBus.getDefault().post(0+"");
+                    EventBus.getDefault().post(0 + "");
+                    MainActivityPermissionsDispatcher.requestStorageWithCheck(MainActivity.this);
                 }
                 invalidateOptionsMenu();
             }
@@ -151,8 +163,13 @@ public class MainActivity extends BaseActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
-        View headerView = navigationView.getHeaderView(0);
+        headerView = navigationView.getHeaderView(0);
         toStorage = (RelativeLayout) headerView.findViewById(R.id.ll_storage);
+        tvStorage = (TextView) headerView.findViewById(R.id.tv_storage_detail);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED) {
+            tvStorage.setText(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Contact_Backup");
+        }
         toStorage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -179,9 +196,7 @@ public class MainActivity extends BaseActivity
     public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-
         SearchView searchView = (SearchView) menu.findItem(R.id.item_search).getActionView();
-
         searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -266,7 +281,6 @@ public class MainActivity extends BaseActivity
             menu.findItem(R.id.item_delete).setVisible(false);
             menu.findItem(R.id.item_search).setVisible(true);
         }
-
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -306,6 +320,19 @@ public class MainActivity extends BaseActivity
         return true;
     }
 
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        MainActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+    @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public void requestStorage() {
+        Logger.d("request storage permission");
+    }
+
+
     public MyViewPager getViewPager() {
         return mViewpager;
     }
@@ -343,10 +370,12 @@ public class MainActivity extends BaseActivity
         toolbar.getMenu().findItem(R.id.item_delete).setVisible(false);
         toolbar.getMenu().findItem(R.id.item_search).setVisible(true);
         toolbar.setTitle(getApplication().getApplicationInfo().labelRes);
-        SparseArray array = contactFragment.getContactAdapter().getCheckBoxStateArray();
-        cancelCheck(array);
-    }
+        if (contactFragment.getContactAdapter() != null) {
+            SparseArray array = contactFragment.getContactAdapter().getCheckBoxStateArray();
+            cancelCheck(array);
+        }
 
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onCheckedNum(String number) {
@@ -356,6 +385,13 @@ public class MainActivity extends BaseActivity
             } else {
                 cancelCheckMode();
             }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPermession(ContactFragment.StoragePermission permission) {
+        if (tvStorage != null) {
+            tvStorage.setText(Environment.getExternalStorageDirectory() + "");
         }
     }
 }

@@ -37,7 +37,6 @@ public class ResolvedContactsAdapter extends RecyclerView.Adapter<ResolvedContac
         initCheckBoxStateArray();
     }
 
-
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         MyViewHolder viewHolder = new MyViewHolder(LayoutInflater.from(context).inflate
@@ -48,7 +47,15 @@ public class ResolvedContactsAdapter extends RecyclerView.Adapter<ResolvedContac
     @Override
     public void onBindViewHolder(MyViewHolder holder, final int position) {
         String name = vCardList.get(position).getStructuredName().getGiven();
+        String surname = vCardList.get(position).getStructuredName().getFamily();
         holder.tvTitle.setVisibility(View.GONE);
+        if (name == null && surname != null) {
+            name = surname;
+        } else if (name != null && surname != null) {
+            name = name + " " + surname;
+        } else if (name == null && surname == null) {
+            name = "";
+        }
         if (name != null) {
             holder.contactName.setText(name);
             holder.roundedLetterView.setTitleText(name.toUpperCase().charAt(0) + "");
@@ -109,7 +116,8 @@ public class ResolvedContactsAdapter extends RecyclerView.Adapter<ResolvedContac
         RoundedLetterView roundedLetterView;
         @BindView(R.id.tv_title)
         TextView tvTitle;
-        @BindView(R.id.rv_item)ConstraintLayout itemView;
+        @BindView(R.id.rv_item)
+        ConstraintLayout itemView;
 
         public MyViewHolder(View itemView) {
             super(itemView);

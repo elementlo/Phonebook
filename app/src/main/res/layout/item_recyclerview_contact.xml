@@ -39,7 +39,7 @@
 		app:rlv_backgroundColorValue="@color/colorPrimary"
 		app:rlv_titleColor="@android:color/white"
 		app:rlv_titleSize="25dp"
-		app:rlv_titleText="A"
+		app:rlv_titleText="#"
 		/>
 
 	<TextView
@@ -49,7 +49,7 @@
 		android:layout_marginLeft="16dp"
 		android:layout_marginRight="8dp"
 		android:singleLine="true"
-		android:text="abc"
+		android:text=""
 		android:textSize="16sp"
 		app:layout_constraintBottom_toBottomOf="parent"
 		app:layout_constraintHorizontal_bias="0.115"

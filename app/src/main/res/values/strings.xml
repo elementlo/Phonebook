@@ -387,5 +387,10 @@
 	<string name="night_mode">Night mode</string>
 	<string name="night_mode_dialog">Night Mode is now available.</string>
 	<string name="share_this_app">Share this App</string>
+	<string name="restore_complete">Restoring complete.</string>
+	<string name="restore_fail">Restoring failed.</string>
+	<string name="restore_success">Restoring complete.</string>
+	<string name="backup_complete">Back-up complete.</string>
+	<string name="backup_failed">Back-up failed.</string>
 
 </resources>

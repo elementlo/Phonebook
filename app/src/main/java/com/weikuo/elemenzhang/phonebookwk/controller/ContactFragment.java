@@ -95,7 +95,7 @@ public class ContactFragment extends Fragment {
                     rvContact.setAdapter(contactAdapter);
                     break;
                 case BACK_UP_SUCCEED:
-                    Snackbar.make(mFab, "Back-up succeeds!", Snackbar.LENGTH_SHORT).
+                    Snackbar.make(mFab, R.string.backup_complete, Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     mFab.setEnabled(false);
                     ((MainActivity) getActivity()).dismissProgressbar();
@@ -103,13 +103,13 @@ public class ContactFragment extends Fragment {
                     EventBus.getDefault().post(BROADCAST_ARCHIVE);
                     break;
                 case BACK_UP_FAILED:
-                    Snackbar.make(mFab, "Back-up fails!", Snackbar.LENGTH_SHORT).
+                    Snackbar.make(mFab, R.string.backup_failed, Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     ((MainActivity) getActivity()).getViewPager().setScroll(true);
                     ((MainActivity) getActivity()).dismissProgressbar();
                     break;
                 case SUBMIT_SUM_CHECK:
-                    if (dialog.getTvItemNum()!=null){
+                    if (dialog.getTvItemNum() != null) {
                         dialog.getTvItemNum().setText(msg.arg1 + " items");
                     }
                     break;
@@ -143,7 +143,7 @@ public class ContactFragment extends Fragment {
     private void initView() {
         ((MainActivity) getActivity()).showProgressbar();
         cache = ACache.get(getActivity());
-        dialog=new CustomDialog(getActivity());
+        dialog = new CustomDialog(getActivity());
         fastScroller.setRecyclerView(rvContact);
 
         rvContact.setOnScrollListener(fastScroller.getOnScrollListener());
@@ -245,7 +245,8 @@ public class ContactFragment extends Fragment {
         }).start();
     }
 
-    @NeedsPermission({Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS})
+    @NeedsPermission({Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE})
     public void requestContactPermission() {
         new Thread(new Runnable() {
             @Override
@@ -263,6 +264,7 @@ public class ContactFragment extends Fragment {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         ContactFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
         requestContactPermission();
+        EventBus.getDefault().post(new StoragePermission());
     }
 
     public ContactAdapter getContactAdapter() {
@@ -326,4 +328,6 @@ public class ContactFragment extends Fragment {
         }
     }
 
+    public static class StoragePermission {
+    }
 }

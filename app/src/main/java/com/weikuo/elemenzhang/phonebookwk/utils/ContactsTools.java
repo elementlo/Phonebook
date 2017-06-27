@@ -1,6 +1,7 @@
 package com.weikuo.elemenzhang.phonebookwk.utils;
 
 import com.github.tamir7.contacts.Contact;
+import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
 
@@ -17,14 +18,14 @@ public class ContactsTools {
     public static VCard createVCard(Contact contact) throws IOException {
         VCard vcard = new VCard();
         StructuredName n = new StructuredName();
-        if (contact.getFamilyName()!=null){
+        if (contact.getFamilyName() != null) {
             n.setFamily(contact.getFamilyName());
         }
         n.setGiven(contact.getGivenName());
-        n.getPrefixes().add(contact.getDisplayName());
         vcard.setStructuredName(n);
-        vcard.setOrganization(contact.getCompanyName());
-
+        if (contact.getDisplayName()!=null){
+            vcard.setFormattedName(contact.getDisplayName());
+        }
         if (contact.getAddresses() != null && contact.getAddresses().size() != 0) {
             Address adr = new Address();
             adr.setExtendedAddress(contact.getAddresses().get(0).getFormattedAddress());

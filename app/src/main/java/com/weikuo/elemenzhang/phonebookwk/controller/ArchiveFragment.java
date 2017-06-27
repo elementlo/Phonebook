@@ -89,14 +89,14 @@ public class ArchiveFragment extends Fragment {
                 case SUCCESS_FLAG:
                     ((MainActivity) getActivity()).getViewPager().setScroll(true);
                     ((MainActivity) getActivity()).dismissProgressbar();
-                    Snackbar.make(btnRes, "Restore succeeds!", Snackbar.LENGTH_SHORT).
+                    Snackbar.make(btnRes, R.string.restore_complete, Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     EventBus.getDefault().post(BROADCAST_CONTACTS);
                     break;
                 case FAIL_FLAG:
                     ((MainActivity) getActivity()).getViewPager().setScroll(true);
                     ((MainActivity) getActivity()).dismissProgressbar();
-                    Snackbar.make(btnRes, "Restore failed!", Snackbar.LENGTH_SHORT).
+                    Snackbar.make(btnRes, R.string.restore_fail, Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     break;
                 case DELETE_SUCCEED:
@@ -290,4 +290,8 @@ public class ArchiveFragment extends Fragment {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPermissionEvent(ContactFragment.StoragePermission permission) {
+        getVCFFromStorage(GeneralTools.getStorageFilePath(getActivity()));
+    }
 }

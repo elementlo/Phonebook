@@ -32,19 +32,19 @@
 			android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 
 		<TextView
-			android:id="@+id/textView"
+			android:id="@+id/tv_storage_detail"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_below="@+id/tv_storage"
 			android:layout_marginTop="7dp"
-			android:text="SDcard/emulat/0/"/>
+			android:text=""/>
 
 		<ImageView
 			android:id="@+id/iv_arrow"
 			android:layout_width="20dp"
 			android:layout_height="20dp"
 			android:layout_alignParentRight="true"
-			android:layout_alignTop="@+id/textView"
+			android:layout_alignTop="@+id/tv_storage_detail"
 			android:layout_marginRight="6dp"
 			android:background="@drawable/ic_triangle"/>
 	</RelativeLayout>

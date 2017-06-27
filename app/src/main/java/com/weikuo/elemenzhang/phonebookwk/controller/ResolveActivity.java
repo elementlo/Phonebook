@@ -61,7 +61,7 @@ public class ResolveActivity extends BaseActivity {
                     rvArContact.setAdapter(adapter);
                     break;
                 case RESOLVE_SUB_SUCCEED:
-                    Snackbar.make(btnRes, "Restore succeeds!", Snackbar.LENGTH_SHORT).
+                    Snackbar.make(btnRes, R.string.restore_success, Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     EventBus.getDefault().post(ArchiveFragment.SUCCESS_FLAG);
                     break;
@@ -76,7 +76,7 @@ public class ResolveActivity extends BaseActivity {
         ButterKnife.bind(this);
 
         filePath = getIntent().getStringExtra("filePath");
-        fileName=getIntent().getStringExtra("fileName");
+        fileName = getIntent().getStringExtra("fileName");
         initView();
         resolveVCFTask();
     }
