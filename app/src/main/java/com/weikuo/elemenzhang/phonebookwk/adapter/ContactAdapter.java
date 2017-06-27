@@ -81,12 +81,17 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
     public void onBindViewHolder(MyViewHolder holder, final int position) {
         String name = contactList.get(position).getGivenName();
         String surname = contactList.get(position).getFamilyName();
+        String phone = null;
+        if (contactList.get(position).getPhoneNumbers() != null &&
+                contactList.get(position).getPhoneNumbers().size() > 0) {
+            phone = contactList.get(position).getPhoneNumbers().get(0).getNumber();
+        }
         if (name == null && surname != null) {
             name = surname;
         } else if (name != null && surname != null) {
             name = name + " " + surname;
-        } else if (name == null && surname == null) {
-            name = "";
+        } else if (name == null && surname == null && phone != null) {
+            name = phone;
         }
 
         if (name != null) {
@@ -197,7 +202,9 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
             }
             if (nameFa != null) {
                 if (nameFa.contains(query)) {
-                    filteredModelList.add(person);
+                    if (!filteredModelList.contains(person)) {
+                        filteredModelList.add(person);
+                    }
                 }
             }
         }
