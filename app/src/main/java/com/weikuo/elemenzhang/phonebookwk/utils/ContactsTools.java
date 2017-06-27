@@ -17,7 +17,9 @@ public class ContactsTools {
     public static VCard createVCard(Contact contact) throws IOException {
         VCard vcard = new VCard();
         StructuredName n = new StructuredName();
-        n.setFamily(contact.getFamilyName());
+        if (contact.getFamilyName()!=null){
+            n.setFamily(contact.getFamilyName());
+        }
         n.setGiven(contact.getGivenName());
         n.getPrefixes().add(contact.getDisplayName());
         vcard.setStructuredName(n);

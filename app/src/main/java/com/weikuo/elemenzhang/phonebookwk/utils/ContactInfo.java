@@ -169,6 +169,17 @@ public class ContactInfo {
                 contactsName = q.find();
                 Logger.d(contactsName.size() + "******size");
             }
+            if (info.getStructuredName().getFamily() != null) {
+                for (int i = 0; i < contactsName.size(); i++) {
+                    if (contactsName.get(i).getFamilyName() != null) {
+                        if (!(contactsName.get(i).getFamilyName().equals(info.getStructuredName().getFamily()))) {
+                            contactsName.remove(i);
+                        }
+                    } else {
+                        contactsName.remove(i);
+                    }
+                }
+            }
             if (phoneList != null && phoneList.size() > 0 && contactsName.size() > 0) {
                 for (int i = 0; i < contactsName.size(); i++) {
                     if (contactsName.get(i).getPhoneNumbers() != null && contactsName.get(i).getPhoneNumbers().size() > 0) {

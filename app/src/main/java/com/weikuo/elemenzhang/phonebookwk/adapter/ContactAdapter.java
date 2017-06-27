@@ -84,6 +84,9 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
         if (name == null) {
             name = surname;
         }
+        if (name != null && surname != null) {
+            name = name + " " + surname;
+        }
         if (name != null) {
             holder.contactName.setText(name);
             holder.roundedLetterView.setTitleText(name.toUpperCase().charAt(0) + "");
