@@ -25,12 +25,7 @@ public class ContactsTools {
 
         if (contact.getAddresses() != null && contact.getAddresses().size() != 0) {
             Address adr = new Address();
-            adr.setStreetAddress(contact.getAddresses().get(0).getStreet());
-            adr.setLocality(contact.getAddresses().get(0).getCity());
-            adr.setPostalCode(contact.getAddresses().get(0).getPostcode());
-            adr.setCountry(contact.getAddresses().get(0).getCountry());
-            adr.setRegion(contact.getAddresses().get(0).getRegion());
-            adr.setLabel(contact.getAddresses().get(0).getLabel());
+            adr.setExtendedAddress(contact.getAddresses().get(0).getFormattedAddress());
             vcard.addAddress(adr);
         }
 

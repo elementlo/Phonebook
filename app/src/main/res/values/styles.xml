@@ -25,5 +25,9 @@
 		<item name="android:button">@drawable/checkbox_style</item>
 		<item name="android:maxHeight">10dp</item>
 	</style>
+
+	<style name="quick_option_dialog" parent="@style/Theme.AppCompat.Dialog">
+		<item name="android:windowBackground">@android:color/white</item>
+	</style>
 	
 </resources>

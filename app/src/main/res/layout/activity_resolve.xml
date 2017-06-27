@@ -28,6 +28,7 @@
 		android:layout_height="48dp"
 		android:layout_alignParentBottom="true"
 		android:layout_margin="12dp"
+		android:textAllCaps="false"
 		android:background="@drawable/shape_solid_button"
 		android:text="Restore"
 		android:textColor="@android:color/white"/>

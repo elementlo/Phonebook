@@ -20,6 +20,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 
+import com.orhanobut.logger.Logger;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContactAdapter;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContentPagerAdapter;
 import com.weikuo.elemenzhang.phonebookwk.controller.ArchiveFragment;
@@ -129,7 +130,10 @@ public class MainActivity extends BaseActivity
             public void onPageSelected(int position) {
                 currentPage = position;
                 mViewpager.setScroll(true);
-                cancelCheckMode();
+                if (position == 1) {
+                    cancelCheckMode();
+                    EventBus.getDefault().post(0+"");
+                }
                 invalidateOptionsMenu();
             }
 
@@ -220,10 +224,10 @@ public class MainActivity extends BaseActivity
                 SparseArray array = contactFragment.getContactAdapter().getCheckBoxStateArray();
                 if (array != null) {
                     if (isChecked) {
-                        EventBus.getDefault().post(array.size()+"");
+                        EventBus.getDefault().post(array.size() + "");
                         checkAll(array);
                     } else {
-                        EventBus.getDefault().post(0+"");
+                        EventBus.getDefault().post(0 + "");
                         cancelCheckMode();
                     }
                 }
@@ -293,6 +297,7 @@ public class MainActivity extends BaseActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_manage) {
+            Logger.d("share");
             GeneralTools.socialShareApks(this);
         }
 

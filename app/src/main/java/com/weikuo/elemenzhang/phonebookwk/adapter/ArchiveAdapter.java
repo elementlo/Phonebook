@@ -35,6 +35,7 @@ public class ArchiveAdapter extends RecyclerView.Adapter<ArchiveAdapter.MyViewHo
     public ArchiveAdapter(Context context, List<Archives> archivesList) {
         this.context = context;
         this.archivesList = archivesList;
+        archiveOption=0;
     }
 
     public void setOnItemClickListner(OnItemClickListner onItemClickListner) {

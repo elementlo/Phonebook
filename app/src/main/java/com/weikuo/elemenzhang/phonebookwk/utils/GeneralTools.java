@@ -45,7 +45,7 @@ public class GeneralTools {
     }
 
     public static File generateFileName(File file, int year, int month, int day) {
-        File fileFinal = new File(file + "/" + year + month + day + "_bak"+i + ".vcf");
+        File fileFinal = new File(file + "/" + year + month + day + "_bak" + i + ".vcf");
         i++;
         if (fileFinal.exists()) {
             return generateFileName(file, year, month, day);
@@ -197,13 +197,14 @@ public class GeneralTools {
     }
 
     public static void socialShareApks(Activity activity) {
-
         Uri uri = Uri.parse("file://" + activity.getPackageResourcePath());
+
         // application/vnd.android.package-archive
         sendMulti(activity,
                 activity.getString(R.string.share_this_app),
                 activity.getString(R.string.attached), uri, "*/*");
     }
+
     public static void sendMulti(Activity activity, String subject,
                                  String msg, Uri uri, String mimeType) {
         if (uri == null)
@@ -226,7 +227,7 @@ public class GeneralTools {
             activity.startActivityForResult(Intent.createChooser(intent, activity
                     .getResources().getString(R.string.share_this_app)), 0);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 }

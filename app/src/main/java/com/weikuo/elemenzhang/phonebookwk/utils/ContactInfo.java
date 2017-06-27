@@ -7,19 +7,23 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 
+import com.github.tamir7.contacts.Contact;
+import com.github.tamir7.contacts.Contacts;
+import com.github.tamir7.contacts.Query;
+import com.orhanobut.logger.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import ezvcard.VCard;
-import ezvcard.property.Address;
 import ezvcard.property.Email;
+import ezvcard.property.Organization;
 import ezvcard.property.Telephone;
 
 /**
  * Created by ma on 2016/4/1.
  */
 public class ContactInfo {
-
     /**
      * MUST exist
      */
@@ -145,88 +149,86 @@ public class ContactInfo {
             return cur;
         }
 
-        /**
-         * 获取联系人信息
-         *
-         * @param context
-         * @return
-         */
-        public List<ContactInfo> getContactInfo(Activity context) {
-            List<ContactInfo> infoList = new ArrayList<ContactInfo>();
-
-            Cursor cur = queryContact(context, null);
-
-            if (cur.moveToFirst()) {
-                do {
-
-                    // 获取联系人id号
-                    String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
-                    // 获取联系人姓名
-                    String displayName = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                    ContactInfo info = new ContactInfo(displayName);// 初始化联系人信息
-
-                    // 查看联系人有多少电话号码, 如果没有返回0
-                    int phoneCount = cur.getInt(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
-
-                    if (phoneCount > 0) {
-
-                        Cursor phonesCursor = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=" + id, null, null);
-
-                        if (phonesCursor.moveToFirst()) {
-                            List<PhoneInfo> phoneNumberList = new ArrayList<PhoneInfo>();
-                            do {
-                                // 遍历所有电话号码
-                                String phoneNumber = phonesCursor.getString(phonesCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                                // 对应的联系人类型
-                                int type = phonesCursor.getInt(phonesCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
-
-                                // 初始化联系人电话信息
-                                ContactInfo.PhoneInfo phoneInfo = new ContactInfo.PhoneInfo();
-                                phoneInfo.type = type;
-                                phoneInfo.number = phoneNumber;
-
-                                phoneNumberList.add(phoneInfo);
-                            } while (phonesCursor.moveToNext());
-                            // 设置联系人电话信息
-                            info.setPhoneList(phoneNumberList);
-                        }
-                    }
-
-                    // 获得联系人的EMAIL
-                    Cursor emailCur = context.getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null, ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=" + id, null, null);
-
-                    if (emailCur.moveToFirst()) {
-                        List<EmailInfo> emailList = new ArrayList<EmailInfo>();
-                        do {
-                            // 遍历所有的email
-                            String email = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA1));
-                            int type = emailCur.getInt(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
-
-                            // 初始化联系人邮箱信息
-                            ContactInfo.EmailInfo emailInfo = new ContactInfo.EmailInfo();
-                            emailInfo.type = type;    // 设置邮箱类型
-                            emailInfo.email = email;    // 设置邮箱地址
-
-                            emailList.add(emailInfo);
-                        } while (emailCur.moveToNext());
-
-                        info.setEmail(emailList);
-                    }
-
-                    //Cursor postalCursor = getContentResolver().query(ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_URI, null, ContactsContract.CommonDataKinds.StructuredPostal.CONTACT_ID + "=" + id, null, null);
-                    infoList.add(info);
-                } while (cur.moveToNext());
-            }
-            cur.close();
-            return infoList;
-        }
 
         /**
          * 向手机中录入联系人信息
          *
          * @param info 要录入的联系人信息
          */
-        public void addContacts(Activity context, VCard info) {
+        public boolean addContacts(Activity context, VCard info) {
+            Query q = Contacts.getQuery();
+
+            List<Telephone> phoneList = info.getTelephoneNumbers();
+            List<Email> emailList = info.getEmails();
+            List<ezvcard.property.Address> addresseList = info.getAddresses();
+            Organization company = info.getOrganization();
+
+            List<Contact> contactsName = new ArrayList<>();
+            if (info.getStructuredName().getGiven() != null) {
+                q.whereEqualTo(Contact.Field.GivenName, info.getStructuredName().getGiven());
+                contactsName = q.find();
+                Logger.d(contactsName.size() + "******size");
+            }
+            if (phoneList != null && phoneList.size() > 0 && contactsName.size() > 0) {
+                for (int i = 0; i < contactsName.size(); i++) {
+                    if (contactsName.get(i).getPhoneNumbers() != null && contactsName.get(i).getPhoneNumbers().size() > 0) {
+                        if (!(phoneList.get(0).getText().equals(contactsName.get(i).getPhoneNumbers().get(0).getNumber()))) {
+                            contactsName.remove(i);
+                        }
+                    } else {
+                        contactsName.remove(i);
+                    }
+                }
+            }
+            if (emailList != null && emailList.size() > 0 && contactsName.size() > 0) {
+                for (int i = 0; i < contactsName.size(); i++) {
+                    if (contactsName.get(i).getEmails() != null && contactsName.get(i).getEmails().size() > 0) {
+                        if (!(emailList.get(0).getValue().equals(contactsName.get(i).getEmails().get(0).getAddress()))) {
+                            contactsName.remove(i);
+                        }
+                    } else {
+                        contactsName.remove(i);
+                    }
+                }
+            }
+            if (company != null && company.getAltId() != null && contactsName.size() > 0) {
+                for (int i = 0; i < contactsName.size(); i++) {
+                    if (contactsName.get(i).getCompanyName() != null) {
+                        if (!(contactsName.get(i).getCompanyName().equals(company.getAltId()))) {
+                            contactsName.remove(i);
+                        }
+                    } else {
+                        contactsName.remove(i);
+                    }
+                }
+            }
+            if (addresseList != null && addresseList.size() > 0 && contactsName.size() > 0) {
+                for (int i = 0; i < contactsName.size(); i++) {
+                    if (contactsName.get(i).getAddresses() != null && contactsName.get(i).getAddresses().size() > 0) {
+                        if (!(contactsName.get(i).getAddresses().get(0).getFormattedAddress().equals(addresseList.get(0).getStreetAddress()))) {
+                            contactsName.remove(i);
+                        }
+                    } else {
+                        contactsName.remove(i);
+                    }
+                }
+            }
+            if (info.getNotes() != null && info.getNotes().size() > 0 && contactsName.size() > 0) {
+                for (int i = 0; i < contactsName.size(); i++) {
+                    if (contactsName.get(i).getNote() != null) {
+                        if (!(contactsName.get(i).getNote().equals(info.getNotes().get(0).getValue()))) {
+                            contactsName.remove(i);
+                        }
+                    } else {
+                        contactsName.remove(i);
+                    }
+                }
+            }
+            if (contactsName.size() != 0) {
+                Logger.d("there is a same one");
+                return false;
+            }
+            Logger.d("not a same one");
             ContentValues values = new ContentValues();
             //首先向RawContacts.CONTENT_URI执行一个空值插入，目的是获取系统返回的rawContactId
             Uri rawContactUri = context.getContentResolver().insert(ContactsContract.RawContacts.CONTENT_URI, values);
@@ -237,11 +239,9 @@ public class ContactInfo {
             values.put(ContactsContract.RawContacts.Data.RAW_CONTACT_ID, rawContactId);
             values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
             values.put(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, info.getStructuredName().getGiven());
-            context.getContentResolver().insert(
-                    ContactsContract.Data.CONTENT_URI, values);
+            context.getContentResolver().insert(ContactsContract.Data.CONTENT_URI, values);
 
             // 获取联系人电话信息
-            List<Telephone> phoneList = info.getTelephoneNumbers();
             /** 录入联系电话 */
             if (phoneList != null && phoneList.size() > 0) {
                 for (Telephone phoneInfo : phoneList) {
@@ -258,9 +258,6 @@ public class ContactInfo {
                             ContactsContract.Data.CONTENT_URI, values);
                 }
             }
-
-            // 获取联系人邮箱信息
-            List<Email> emailList = info.getEmails();
 
             /** 录入联系人邮箱信息 */
             if (emailList != null && emailList.size() > 0) {
@@ -280,25 +277,32 @@ public class ContactInfo {
                 }
             }
 
-            List<Address> addressList = info.getAddresses();
-            if (addressList != null && addressList.size() > 0) {
+            if (company != null && company.getAltId() != null) {
                 values.clear();
                 values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
-                values.put(ContactsContract.Contacts.Data.MIMETYPE,
+                values.put(ContactsContract.RawContacts.Data.MIMETYPE,
                         ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
-                values.put(ContactsContract.CommonDataKinds.Organization.DATA, addressList.get(0).getExtendedAddressFull());
+                values.put(ContactsContract.CommonDataKinds.Organization.DATA, company.getAltId());
                 context.getContentResolver().insert(ContactsContract.Data.CONTENT_URI, values);
             }
 
-            if (info.getNotes() != null || info.getNotes().size() > 0) {
+            if (info.getAddresses() != null && info.getAddresses().size() > 0) {
                 values.clear();
                 values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
-                values.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE);
+                values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.SipAddress.CONTENT_ITEM_TYPE);
+                values.put(ContactsContract.CommonDataKinds.SipAddress.DATA, info.getAddresses().get(0).getExtendedAddressFull());
+                context.getContentResolver().insert(ContactsContract.Data.CONTENT_URI, values);
+            }
+
+            if (info.getNotes() != null && info.getNotes().size() > 0) {
+                values.clear();
+                values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
+                values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE);
                 values.put(ContactsContract.CommonDataKinds.Note.DATA1, info.getNotes().get(0).getValue());
                 context.getContentResolver().insert(ContactsContract.Data.CONTENT_URI, values);
             }
 
-
+            return true;
         }
 
     }

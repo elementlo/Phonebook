@@ -61,7 +61,7 @@ public class ResolveActivity extends BaseActivity {
                     rvArContact.setAdapter(adapter);
                     break;
                 case RESOLVE_SUB_SUCCEED:
-                    Snackbar.make(btnRes, "Back-up succeeds!", Snackbar.LENGTH_SHORT).
+                    Snackbar.make(btnRes, "Restore succeeds!", Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     EventBus.getDefault().post(ArchiveFragment.SUCCESS_FLAG);
                     break;

@@ -48,13 +48,14 @@
 		android:textColor="@android:color/white"
 		android:textSize="18sp"/>
 
-	<RelativeLayout
-		android:visibility="gone"
+	<!--<RelativeLayout
 		android:id="@+id/rl_bottommenu"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:background="#5f000000"
 		android:clickable="true"
+		android:focusable="true"
+		android:visibility="gone"
 		>
 
 		<LinearLayout
@@ -100,14 +101,14 @@
 			<Button
 				android:id="@+id/btn_done"
 				android:layout_width="match_parent"
-				android:background="@drawable/shape_button"
-				android:textColor="@color/colorPrimary"
 				android:layout_height="48dp"
 				android:layout_margin="12dp"
-				android:text="Done"/>
+				android:background="@drawable/shape_button"
+				android:text="Done"
+				android:textColor="@color/colorPrimary"/>
 
 		</LinearLayout>
-	</RelativeLayout>
+	</RelativeLayout>-->
 
 
 </RelativeLayout>

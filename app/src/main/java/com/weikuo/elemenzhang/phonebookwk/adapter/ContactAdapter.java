@@ -205,7 +205,9 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
         for (int i = 0; i < nameArrary.length; i++) {
             nameArrary[i] = contactList.get(i).getGivenName();
         }
+
         return nameArrary;
+
     }
 
     @Override
@@ -215,6 +217,9 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
 
     @Override
     public int getSectionForPosition(int position) {
+   /*     if ( contactList.size()>0) {
+            position = contactList.size() - 1;
+        }*/
         if (position >= contactList.size()) {
             position = contactList.size() - 1;
         }

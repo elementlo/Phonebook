@@ -62,7 +62,7 @@
 		android:id="@+id/cb_contact_select"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_marginRight="24dp"
+		android:layout_marginRight="34dp"
 		android:clickable="false"
 		app:layout_constraintBottom_toBottomOf="parent"
 		app:layout_constraintRight_toRightOf="parent"

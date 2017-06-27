@@ -89,14 +89,14 @@ public class ArchiveFragment extends Fragment {
                 case SUCCESS_FLAG:
                     ((MainActivity) getActivity()).getViewPager().setScroll(true);
                     ((MainActivity) getActivity()).dismissProgressbar();
-                    Snackbar.make(btnRes, "Back-up succeeds!", Snackbar.LENGTH_SHORT).
+                    Snackbar.make(btnRes, "Restore succeeds!", Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     EventBus.getDefault().post(BROADCAST_CONTACTS);
                     break;
                 case FAIL_FLAG:
                     ((MainActivity) getActivity()).getViewPager().setScroll(true);
                     ((MainActivity) getActivity()).dismissProgressbar();
-                    Snackbar.make(btnRes, "Back-up failed!", Snackbar.LENGTH_SHORT).
+                    Snackbar.make(btnRes, "Restore failed!", Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     break;
                 case DELETE_SUCCEED:
@@ -220,6 +220,17 @@ public class ArchiveFragment extends Fragment {
                     }
                 }
                 Collections.reverse(archivesList);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (archivesList.size() > 0) {
+                            btnRes.setEnabled(true);
+                        } else {
+                            btnRes.setEnabled(false);
+                        }
+                    }
+                });
+
                 Message message = handler.obtainMessage();
                 message.what = SHOW_AR_LIST;
                 handler.sendMessage(message);
@@ -255,7 +266,6 @@ public class ArchiveFragment extends Fragment {
                         insertHandler.addContacts(getActivity(), vCard);
                     }
                     Message message = handler.obtainMessage();
-
                     message.obj = "recover success";
                     message.what = SUCCESS_FLAG;
                     handler.sendMessage(message);
@@ -269,7 +279,6 @@ public class ArchiveFragment extends Fragment {
             }
         }).start();
     }
-
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)

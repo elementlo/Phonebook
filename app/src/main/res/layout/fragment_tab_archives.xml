@@ -20,7 +20,7 @@
 		android:layout_alignParentBottom="true"
 		android:layout_margin="12dp"
 		android:textSize="18sp"
-		android:background="@drawable/shape_solid_button"
+		android:background="@drawable/btn_backup_selector"
 		android:text="Restore"
 		android:textAllCaps="false"
 		android:textColor="@android:color/white"/>

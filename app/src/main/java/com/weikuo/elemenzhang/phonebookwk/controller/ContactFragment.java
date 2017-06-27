@@ -22,8 +22,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.github.tamir7.contacts.Contact;
 import com.github.tamir7.contacts.Contacts;
@@ -34,6 +32,7 @@ import com.weikuo.elemenzhang.phonebookwk.utils.ACache;
 import com.weikuo.elemenzhang.phonebookwk.utils.ContactsTools;
 import com.weikuo.elemenzhang.phonebookwk.utils.GeneralTools;
 import com.weikuo.elemenzhang.phonebookwk.view.customview.ColorGroupSectionTitleIndicator;
+import com.weikuo.elemenzhang.phonebookwk.view.customview.CustomDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -67,14 +66,7 @@ public class ContactFragment extends Fragment {
     Button mFab;
     @BindView(R.id.fast_scroller_section_title_indicator)
     ColorGroupSectionTitleIndicator sectionTitleIndicator;
-    @BindView(R.id.rl_bottommenu)
-    RelativeLayout bottomMenu;
-    @BindView(R.id.tv_itemnum)
-    TextView tvItemNum;
-    @BindView(R.id.tv_percent)
-    TextView tvPercent;
-    @BindView(R.id.btn_done)
-    Button btnDone;
+    private CustomDialog dialog;
 
     private List<Contact> contactList;
     private ArrayList<ContentProviderOperation> ops;
@@ -89,20 +81,24 @@ public class ContactFragment extends Fragment {
     private final int SUBMIT_SUM_CHECK = 4;
     private ACache cache;
 
-
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
                 case INIT_CANTACT_LIST:
+                    ((MainActivity) getActivity()).dismissProgressbar();
+                    if (contactList != null && contactList.size() > 0) {
+                        fastScroller.setSectionIndicator(sectionTitleIndicator);
+                    }
                     contactAdapter = new ContactAdapter(getActivity(), contactList);
                     rvContact.setAdapter(contactAdapter);
                     break;
                 case BACK_UP_SUCCEED:
                     Snackbar.make(mFab, "Back-up succeeds!", Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
-                    ((MainActivity) getActivity()).dismissProgressdialog();
+                    mFab.setEnabled(false);
+                    ((MainActivity) getActivity()).dismissProgressbar();
                     ((MainActivity) getActivity()).getViewPager().setScroll(true);
                     EventBus.getDefault().post(BROADCAST_ARCHIVE);
                     break;
@@ -110,11 +106,12 @@ public class ContactFragment extends Fragment {
                     Snackbar.make(mFab, "Back-up fails!", Snackbar.LENGTH_SHORT).
                             setAction("Action", null).show();
                     ((MainActivity) getActivity()).getViewPager().setScroll(true);
-                    ((MainActivity) getActivity()).dismissProgressdialog();
+                    ((MainActivity) getActivity()).dismissProgressbar();
                     break;
                 case SUBMIT_SUM_CHECK:
-                    tvItemNum.setText(msg.arg1 + " items");
-                    tvPercent.setText("100%");
+                    if (dialog.getTvItemNum()!=null){
+                        dialog.getTvItemNum().setText(msg.arg1 + " items");
+                    }
                     break;
             }
         }
@@ -144,31 +141,15 @@ public class ContactFragment extends Fragment {
     }
 
     private void initView() {
-        ((MainActivity) getActivity()).shoProgressdialog(getActivity());
+        ((MainActivity) getActivity()).showProgressbar();
         cache = ACache.get(getActivity());
-
+        dialog=new CustomDialog(getActivity());
         fastScroller.setRecyclerView(rvContact);
-        fastScroller.setSectionIndicator(sectionTitleIndicator);
+
         rvContact.setOnScrollListener(fastScroller.getOnScrollListener());
         rvContact.setLayoutManager(new LinearLayoutManager(getActivity()));
-
         ops = new ArrayList<>();
         mFab.setEnabled(false);
-        mFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((MainActivity) getActivity()).shoProgressdialog(getActivity());
-                if (contactAdapter != null) {
-                    checkBoxStateArray = contactAdapter.getCheckBoxStateArray();
-                    if (checkBoxStateArray == null) {
-                        return;
-                    }
-                    mFab.setVisibility(View.GONE);
-                    bottomMenu.setVisibility(View.VISIBLE);
-                    ContactFragmentPermissionsDispatcher.backupTaskWithCheck(ContactFragment.this);
-                }
-            }
-        });
 
         ((MainActivity) getActivity()).setOnDeleteItemClickListner(new MainActivity.onDeleteItemClick() {
             @Override
@@ -270,7 +251,6 @@ public class ContactFragment extends Fragment {
             @Override
             public void run() {
                 contactList = Contacts.getQuery().find();
-
                 Message message = mHandler.obtainMessage();
                 message.what = INIT_CANTACT_LIST;
                 mHandler.sendMessage(message);
@@ -294,11 +274,36 @@ public class ContactFragment extends Fragment {
     }
 
 
-    @OnClick(R.id.btn_done)
+/*    @OnClick(R.id.btn_done)
     public void doneClick() {
-        bottomMenu.setVisibility(View.GONE);
+        //bottomMenu.setVisibility(View.GONE);
         mFab.setVisibility(View.VISIBLE);
         ((MainActivity) getActivity()).cancelCheckMode();
+    }*/
+
+    @OnClick(R.id.btn_backup)
+    public void backupClick() {
+        ((MainActivity) getActivity()).showProgressbar();
+        if (contactAdapter != null) {
+            checkBoxStateArray = contactAdapter.getCheckBoxStateArray();
+            if (checkBoxStateArray == null) {
+                return;
+            }
+            mFab.setVisibility(View.GONE);
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.show();
+            if (dialog.getDoneButton() != null) {
+                dialog.getDoneButton().setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mFab.setVisibility(View.VISIBLE);
+                        dialog.cancel();
+                        ((MainActivity) getActivity()).cancelCheckMode();
+                    }
+                });
+            }
+            ContactFragmentPermissionsDispatcher.backupTaskWithCheck(ContactFragment.this);
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -306,6 +311,9 @@ public class ContactFragment extends Fragment {
         if (contactList != null) {
             contactList.clear();
             ContactFragmentPermissionsDispatcher.requestContactPermissionWithCheck(this);
+            if (contactList != null && contactList.size() > 0) {
+                fastScroller.setSectionIndicator(sectionTitleIndicator);
+            }
         }
     }
 
