@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -47,8 +46,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import permissions.dispatcher.NeedsPermission;
-import permissions.dispatcher.RuntimePermissions;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -105,7 +102,7 @@ public class MainActivity extends BaseActivity
 
         initView();
         initTabContent();
-        startService(new Intent(this,ContactSyncService.class));
+        //startService(new Intent(this, ContactSyncService.class));
     }
 
     @Override
@@ -160,7 +157,7 @@ public class MainActivity extends BaseActivity
     }
 
     private void initView() {
-        aCache=ACache.get(this);
+        aCache = ACache.get(this);
         mViewpager.setScroll(true);
         toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -201,7 +198,7 @@ public class MainActivity extends BaseActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         SearchView searchView = (SearchView) menu.findItem(R.id.item_search).getActionView();
-        checkBoxAll= (CheckBox) menu.findItem(R.id.item_checkall).getActionView();
+        checkBoxAll = (CheckBox) menu.findItem(R.id.item_checkall).getActionView();
         searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -356,7 +353,7 @@ public class MainActivity extends BaseActivity
             return;
         }
         isCheckMode = false;
-        if (checkBoxAll!=null){
+        if (checkBoxAll != null) {
             checkBoxAll.setChecked(false);
         }
         //((CheckBox) toolbar.getMenu().findItem(R.id.item_checkall).getActionView()).setChecked(false);
