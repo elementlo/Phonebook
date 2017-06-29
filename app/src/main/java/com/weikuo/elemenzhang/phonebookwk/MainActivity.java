@@ -31,7 +31,6 @@ import com.weikuo.elemenzhang.phonebookwk.adapter.ContentPagerAdapter;
 import com.weikuo.elemenzhang.phonebookwk.controller.ArchiveFragment;
 import com.weikuo.elemenzhang.phonebookwk.controller.BaseActivity;
 import com.weikuo.elemenzhang.phonebookwk.controller.ContactFragment;
-import com.weikuo.elemenzhang.phonebookwk.controller.ContactSyncService;
 import com.weikuo.elemenzhang.phonebookwk.controller.StorageActivity;
 import com.weikuo.elemenzhang.phonebookwk.utils.ACache;
 import com.weikuo.elemenzhang.phonebookwk.utils.GeneralTools;
@@ -64,6 +63,10 @@ public class MainActivity extends BaseActivity
     private ActionBarDrawerToggle toggle;
     private View headerView;
     private CheckBox checkBoxAll;
+    private SearchView searchView;
+    private MenuItem deleteItem;
+    private MenuItem searchItem;
+    private MenuItem checkAllItem;
 
     private List<String> tabIndicators;
     private List<Fragment> tabFragments;
@@ -197,12 +200,15 @@ public class MainActivity extends BaseActivity
     public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        SearchView searchView = (SearchView) menu.findItem(R.id.item_search).getActionView();
+        deleteItem=menu.findItem(R.id.item_delete);
+        searchItem=menu.findItem(R.id.item_search);
+        checkAllItem=menu.findItem(R.id.item_checkall);
+        searchView = (SearchView) menu.findItem(R.id.item_search).getActionView();
         checkBoxAll = (CheckBox) menu.findItem(R.id.item_checkall).getActionView();
         searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                menu.findItem(R.id.item_checkall).setVisible(false);
+                checkAllItem.setVisible(false);
             }
         });
 
@@ -226,13 +232,13 @@ public class MainActivity extends BaseActivity
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                menu.findItem(R.id.item_checkall).setVisible(true);
+                checkAllItem.setVisible(true);
                 contactFragment.getContactAdapter().resetList();
                 return false;
             }
         });
 
-        ((CheckBox) menu.findItem(R.id.item_checkall).getActionView()).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        checkBoxAll.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (contactFragment.getContactAdapter() == null) {
@@ -275,13 +281,13 @@ public class MainActivity extends BaseActivity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (currentPage == 1) {
-            menu.findItem(R.id.item_checkall).setVisible(false);
-            menu.findItem(R.id.item_delete).setVisible(true);
-            menu.findItem(R.id.item_search).setVisible(false);
+            checkAllItem.setVisible(false);
+            deleteItem.setVisible(true);
+            searchItem.setVisible(false);
         } else {
-            menu.findItem(R.id.item_checkall).setVisible(true);
-            menu.findItem(R.id.item_delete).setVisible(false);
-            menu.findItem(R.id.item_search).setVisible(true);
+            checkAllItem.setVisible(true);
+            deleteItem.setVisible(false);
+            searchItem.setVisible(true);
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -330,17 +336,17 @@ public class MainActivity extends BaseActivity
         isCheckMode = true;
         toggle.setDrawerIndicatorEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.getMenu().findItem(R.id.item_delete).setVisible(true);
-        toolbar.getMenu().findItem(R.id.item_search).setVisible(false);
+        deleteItem.setVisible(true);
+        searchItem.setVisible(false);
         toolbar.setTitle(number + " selected");
         toggle.setToolbarNavigationClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((CheckBox) toolbar.getMenu().findItem(R.id.item_checkall).getActionView()).setChecked(false);
+                checkBoxAll.setChecked(false);
                 getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 toggle.setDrawerIndicatorEnabled(true);
-                toolbar.getMenu().findItem(R.id.item_delete).setVisible(false);
-                toolbar.getMenu().findItem(R.id.item_search).setVisible(true);
+                deleteItem.setVisible(false);
+                searchItem.setVisible(true);
                 toolbar.setTitle(getApplication().getApplicationInfo().labelRes);
                 SparseArray array = contactFragment.getContactAdapter().getCheckBoxStateArray();
                 cancelCheck(array);
@@ -359,8 +365,8 @@ public class MainActivity extends BaseActivity
         //((CheckBox) toolbar.getMenu().findItem(R.id.item_checkall).getActionView()).setChecked(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         toggle.setDrawerIndicatorEnabled(true);
-        toolbar.getMenu().findItem(R.id.item_delete).setVisible(false);
-        toolbar.getMenu().findItem(R.id.item_search).setVisible(true);
+        deleteItem.setVisible(false);
+        searchItem.setVisible(true);
         toolbar.setTitle(getApplication().getApplicationInfo().labelRes);
         if (contactFragment.getContactAdapter() != null) {
             SparseArray array = contactFragment.getContactAdapter().getCheckBoxStateArray();

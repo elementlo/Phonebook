@@ -109,7 +109,6 @@ public class MyApplication extends Application {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
         }
         ContactSyncService.ContactChanged contactChanged=new ContactSyncService.ContactChanged();
         contactChanged.setContactList(contactList);

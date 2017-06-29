@@ -28,6 +28,7 @@ import com.github.tamir7.contacts.Contacts;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.orhanobut.logger.Logger;
 import com.weikuo.elemenzhang.phonebookwk.MainActivity;
 import com.weikuo.elemenzhang.phonebookwk.R;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContactAdapter;
@@ -420,6 +421,7 @@ public class ContactFragment extends Fragment {
     public void onContactChange(ContactSyncService.ContactChanged contactChanged) {
         contactList = contactChanged.getContactList();
         if (contactList != null) {
+            Logger.d("receive contacts changed");
             Message message = mHandler.obtainMessage();
             message.what = INIT_CANTACT_LIST;
             mHandler.sendMessage(message);
