@@ -14,7 +14,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,7 +28,6 @@ import com.github.tamir7.contacts.Contacts;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
-import com.j256.ormlite.table.TableUtils;
 import com.weikuo.elemenzhang.phonebookwk.MainActivity;
 import com.weikuo.elemenzhang.phonebookwk.R;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContactAdapter;
@@ -288,10 +286,10 @@ public class ContactFragment extends Fragment {
                 message.what = INIT_CANTACT_LIST;
                 mHandler.sendMessage(message);
                 //getActivity().deleteDatabase("sqlite-contact.db");
-                DatabaseHelper helper=DatabaseHelper.getHelper(getActivity());
+                DatabaseHelper helper = DatabaseHelper.getHelper(getActivity());
                 helper.onDelete();
                 try {
-                    if (!(helper.getUserDao().isTableExists())){
+                    if (!(helper.getUserDao().isTableExists())) {
                         helper.reCreateTable();
                     }
                 } catch (SQLException e) {
@@ -299,38 +297,38 @@ public class ContactFragment extends Fragment {
                 }
                 RawContact rawContact;
                 for (int i = 0; i < contactList.size(); i++) {
-                    rawContact=new RawContact();
-                    if (contactList.get(i).getGivenName()!=null){
+                    rawContact = new RawContact();
+                    if (contactList.get(i).getGivenName() != null) {
                         rawContact.setName(contactList.get(i).getGivenName());
-                    }else {
+                    } else {
                         rawContact.setName("");
                     }
-                    if (contactList.get(i).getEmails()!=null&&contactList.get(i).getEmails().size()>0){
+                    if (contactList.get(i).getEmails() != null && contactList.get(i).getEmails().size() > 0) {
                         rawContact.setEmail(contactList.get(i).getEmails().get(0).getAddress());
                     }
-                    if (contactList.get(i).getFamilyName()!=null){
+                    if (contactList.get(i).getFamilyName() != null) {
                         rawContact.setFamily(contactList.get(i).getFamilyName());
-                    }else {
+                    } else {
                         rawContact.setFamily("");
                     }
-                    if (contactList.get(i).getPhoneNumbers()!=null&&contactList.get(i).getPhoneNumbers().size()>0){
+                    if (contactList.get(i).getPhoneNumbers() != null && contactList.get(i).getPhoneNumbers().size() > 0) {
                         rawContact.setPhone(contactList.get(i).getPhoneNumbers().get(0).getNumber());
-                    }else {
+                    } else {
                         rawContact.setPhone("");
                     }
-                    if (contactList.get(i).getAddresses()!=null&&contactList.get(i).getAddresses().size()>0){
+                    if (contactList.get(i).getAddresses() != null && contactList.get(i).getAddresses().size() > 0) {
                         rawContact.setAddress(contactList.get(i).getAddresses().get(0).getFormattedAddress());
-                    }else {
+                    } else {
                         rawContact.setAddress("");
                     }
-                    if (contactList.get(i).getCompanyName()!=null){
+                    if (contactList.get(i).getCompanyName() != null) {
                         rawContact.setCompany(contactList.get(i).getCompanyName());
-                    }else {
+                    } else {
                         rawContact.setCompany("");
                     }
-                    if (contactList.get(i).getNote()!=null){
+                    if (contactList.get(i).getNote() != null) {
                         rawContact.setNote(contactList.get(i).getNote());
-                    }else {
+                    } else {
                         rawContact.setNote("");
                     }
                     try {
@@ -419,9 +417,9 @@ public class ContactFragment extends Fragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onContactChange(ContactSyncService.ContactChanged contactChanged){
-        contactList=contactChanged.getContactList();
-        if (contactList!=null){
+    public void onContactChange(ContactSyncService.ContactChanged contactChanged) {
+        contactList = contactChanged.getContactList();
+        if (contactList != null) {
             Message message = mHandler.obtainMessage();
             message.what = INIT_CANTACT_LIST;
             mHandler.sendMessage(message);
@@ -431,7 +429,7 @@ public class ContactFragment extends Fragment {
     public static class StoragePermission {
     }
 
-    public static class AchiveEvent{
+    public static class AchiveEvent {
 
     }
 }

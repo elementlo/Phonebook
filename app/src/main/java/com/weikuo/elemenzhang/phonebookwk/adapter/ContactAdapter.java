@@ -45,7 +45,8 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
         Collections.sort(contactList, new Comparator<Contact>() {
             @Override
             public int compare(Contact o1, Contact o2) {
-                if (o1.getGivenName() != null && o2.getGivenName() != null) {
+                if (o1.getGivenName() != null && o2.getGivenName() != null
+                        && !o1.getGivenName().isEmpty() && !o2.getGivenName().isEmpty()) {
                     int former = o1.getGivenName().charAt(0);
                     int latter = o2.getGivenName().charAt(0);
                     if (former < 65 || former > 90) {
@@ -106,11 +107,13 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
             int positionForSelection = getPositionForSelection(selection);
             if (position == positionForSelection) {
                 holder.tvTitle.setVisibility(View.VISIBLE);
-                holder.tvTitle.setText(name.toUpperCase().charAt(0) + "");
+                if (!name.toUpperCase().isEmpty()){
+                    holder.tvTitle.setText(name.toUpperCase().charAt(0) + "");
+                }
             } else {
                 holder.tvTitle.setVisibility(View.INVISIBLE);
             }
-        }else {
+        } else {
             holder.roundedLetterView.setTitleText("");
             holder.contactName.setText("");
             holder.tvTitle.setText("");
@@ -148,7 +151,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
             if (name == null) {
                 name = contactList.get(i).getFamilyName();
             }
-            if (name != null) {
+            if (name != null && !name.toUpperCase().isEmpty()) {
                 char first = name.toUpperCase().charAt(0);
                 if (first == selection) {
                     return i;

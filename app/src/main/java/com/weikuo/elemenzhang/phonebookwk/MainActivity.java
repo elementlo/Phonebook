@@ -66,6 +66,7 @@ public class MainActivity extends BaseActivity
     private TextView tvStorage;
     private ActionBarDrawerToggle toggle;
     private View headerView;
+    private CheckBox checkBoxAll;
 
     private List<String> tabIndicators;
     private List<Fragment> tabFragments;
@@ -96,7 +97,7 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -200,6 +201,7 @@ public class MainActivity extends BaseActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         SearchView searchView = (SearchView) menu.findItem(R.id.item_search).getActionView();
+        checkBoxAll= (CheckBox) menu.findItem(R.id.item_checkall).getActionView();
         searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -354,7 +356,10 @@ public class MainActivity extends BaseActivity
             return;
         }
         isCheckMode = false;
-        ((CheckBox) toolbar.getMenu().findItem(R.id.item_checkall).getActionView()).setChecked(false);
+        if (checkBoxAll!=null){
+            checkBoxAll.setChecked(false);
+        }
+        //((CheckBox) toolbar.getMenu().findItem(R.id.item_checkall).getActionView()).setChecked(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         toggle.setDrawerIndicatorEnabled(true);
         toolbar.getMenu().findItem(R.id.item_delete).setVisible(false);

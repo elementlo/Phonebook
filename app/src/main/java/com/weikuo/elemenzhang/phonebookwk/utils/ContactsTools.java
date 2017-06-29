@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import ezvcard.VCard;
 import ezvcard.property.Address;
-import ezvcard.property.Organization;
 import ezvcard.property.StructuredName;
 
 /**

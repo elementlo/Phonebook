@@ -39,7 +39,7 @@ public class StorageActivity extends BaseActivity {
     private ACache cache;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_storage);
         ButterKnife.bind(this);

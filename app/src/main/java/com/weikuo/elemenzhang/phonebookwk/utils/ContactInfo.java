@@ -175,7 +175,7 @@ public class ContactInfo {
             if (emailList != null && emailList.size() > 0) {
                 sqlMap.put("email", emailList.get(0).getValue());
             }
-            if (company != null && company.getValues() != null&&company.getValues().size()>0) {
+            if (company != null && company.getValues() != null && company.getValues().size() > 0) {
                 sqlMap.put("company", company.getValues().get(0));
             }
             if (addresseList != null && addresseList.size() > 0) {
@@ -248,7 +248,7 @@ public class ContactInfo {
                 }
             }
 
-            if (company != null && company.getValues() != null&&company.getValues().size()>0) {
+            if (company != null && company.getValues() != null && company.getValues().size() > 0) {
                 values.clear();
                 values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
                 values.put(ContactsContract.RawContacts.Data.MIMETYPE,

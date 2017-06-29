@@ -26,7 +26,7 @@ public class ColorGroupSectionTitleIndicator extends SectionTitleIndicator<Strin
 
     @Override
     public void setSection(String object) {
-        if (object!=null){
+        if (object!=null&&!object.isEmpty()){
             setTitleText(object.charAt(0)+"");
         }
     }
