@@ -7,13 +7,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 
-import com.github.tamir7.contacts.Contact;
-import com.github.tamir7.contacts.Contacts;
-import com.github.tamir7.contacts.Query;
 import com.orhanobut.logger.Logger;
+import com.weikuo.elemenzhang.phonebookwk.bean.RawContact;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ezvcard.VCard;
 import ezvcard.property.Email;
@@ -156,90 +157,46 @@ public class ContactInfo {
          * @param info 要录入的联系人信息
          */
         public boolean addContacts(Activity context, VCard info) {
-            Query q = Contacts.getQuery();
-
             List<Telephone> phoneList = info.getTelephoneNumbers();
             List<Email> emailList = info.getEmails();
             List<ezvcard.property.Address> addresseList = info.getAddresses();
             Organization company = info.getOrganization();
-
-            List<Contact> contactsName = new ArrayList<>();
+            DatabaseHelper helper = DatabaseHelper.getHelper(context);
+            Map<String, Object> sqlMap = new HashMap<>();
             if (info.getStructuredName().getGiven() != null) {
-                q.whereEqualTo(Contact.Field.GivenName, info.getStructuredName().getGiven());
-                contactsName = q.find();
-                Logger.d(contactsName.size() + "******size");
+                sqlMap.put("name", info.getStructuredName().getGiven());
             }
             if (info.getStructuredName().getFamily() != null) {
-                for (int i = 0; i < contactsName.size(); i++) {
-                    if (contactsName.get(i).getFamilyName() != null) {
-                        if (!(contactsName.get(i).getFamilyName().equals(info.getStructuredName().getFamily()))) {
-                            contactsName.remove(i);
-                        }
-                    } else {
-                        contactsName.remove(i);
-                    }
+                sqlMap.put("family", info.getStructuredName().getFamily());
+            }
+            if (phoneList != null && phoneList.size() > 0) {
+                sqlMap.put("phone", phoneList.get(0).getText());
+            }
+            if (emailList != null && emailList.size() > 0) {
+                sqlMap.put("email", emailList.get(0).getValue());
+            }
+            if (company != null && company.getValues() != null&&company.getValues().size()>0) {
+                sqlMap.put("company", company.getValues().get(0));
+            }
+            if (addresseList != null && addresseList.size() > 0) {
+                sqlMap.put("address", addresseList.get(0).getExtendedAddressFull());
+            }
+            if (info.getNotes() != null && info.getNotes().size() > 0) {
+                sqlMap.put("note", info.getNotes().get(0).getValue());
+            }
+
+            try {
+                List<RawContact> rawContacts = helper.getUserDao().queryForFieldValues(sqlMap);
+                if (rawContacts.size() > 0) {
+                    Logger.d("there is a same one");
+                    return false;
                 }
+                Logger.d("not a same one");
+
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-            if (phoneList != null && phoneList.size() > 0 && contactsName.size() > 0) {
-                for (int i = 0; i < contactsName.size(); i++) {
-                    if (contactsName.get(i).getPhoneNumbers() != null && contactsName.get(i).getPhoneNumbers().size() > 0) {
-                        if (!(phoneList.get(0).getText().equals(contactsName.get(i).getPhoneNumbers().get(0).getNumber()))) {
-                            contactsName.remove(i);
-                        }
-                    } else {
-                        contactsName.remove(i);
-                    }
-                }
-            }
-            if (emailList != null && emailList.size() > 0 && contactsName.size() > 0) {
-                for (int i = 0; i < contactsName.size(); i++) {
-                    if (contactsName.get(i).getEmails() != null && contactsName.get(i).getEmails().size() > 0) {
-                        if (!(emailList.get(0).getValue().equals(contactsName.get(i).getEmails().get(0).getAddress()))) {
-                            contactsName.remove(i);
-                        }
-                    } else {
-                        contactsName.remove(i);
-                    }
-                }
-            }
-            if (company != null && company.getAltId() != null && contactsName.size() > 0) {
-                for (int i = 0; i < contactsName.size(); i++) {
-                    if (contactsName.get(i).getCompanyName() != null) {
-                        if (!(contactsName.get(i).getCompanyName().equals(company.getAltId()))) {
-                            contactsName.remove(i);
-                        }
-                    } else {
-                        contactsName.remove(i);
-                    }
-                }
-            }
-            if (addresseList != null && addresseList.size() > 0 && contactsName.size() > 0) {
-                for (int i = 0; i < contactsName.size(); i++) {
-                    if (contactsName.get(i).getAddresses() != null && contactsName.get(i).getAddresses().size() > 0) {
-                        if (!(contactsName.get(i).getAddresses().get(0).getFormattedAddress().equals(addresseList.get(0).getStreetAddress()))) {
-                            contactsName.remove(i);
-                        }
-                    } else {
-                        contactsName.remove(i);
-                    }
-                }
-            }
-            if (info.getNotes() != null && info.getNotes().size() > 0 && contactsName.size() > 0) {
-                for (int i = 0; i < contactsName.size(); i++) {
-                    if (contactsName.get(i).getNote() != null) {
-                        if (!(contactsName.get(i).getNote().equals(info.getNotes().get(0).getValue()))) {
-                            contactsName.remove(i);
-                        }
-                    } else {
-                        contactsName.remove(i);
-                    }
-                }
-            }
-            if (contactsName.size() != 0) {
-                Logger.d("there is a same one");
-                return false;
-            }
-            Logger.d("not a same one");
+
             ContentValues values = new ContentValues();
             //首先向RawContacts.CONTENT_URI执行一个空值插入，目的是获取系统返回的rawContactId
             Uri rawContactUri = context.getContentResolver().insert(ContactsContract.RawContacts.CONTENT_URI, values);
@@ -291,20 +248,20 @@ public class ContactInfo {
                 }
             }
 
-            if (company != null && company.getAltId() != null) {
+            if (company != null && company.getValues() != null&&company.getValues().size()>0) {
                 values.clear();
                 values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
                 values.put(ContactsContract.RawContacts.Data.MIMETYPE,
                         ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
-                values.put(ContactsContract.CommonDataKinds.Organization.DATA, company.getAltId());
+                values.put(ContactsContract.CommonDataKinds.Organization.DATA, company.getValues().get(0));
                 context.getContentResolver().insert(ContactsContract.Data.CONTENT_URI, values);
             }
 
-            if (info.getAddresses() != null && info.getAddresses().size() > 0) {
+            if (addresseList != null && addresseList.size() > 0) {
                 values.clear();
                 values.put(ContactsContract.Contacts.Data.RAW_CONTACT_ID, rawContactId);
-                values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.SipAddress.CONTENT_ITEM_TYPE);
-                values.put(ContactsContract.CommonDataKinds.SipAddress.DATA, info.getAddresses().get(0).getExtendedAddressFull());
+                values.put(ContactsContract.RawContacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE);
+                values.put(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, addresseList.get(0).getExtendedAddressFull());
                 context.getContentResolver().insert(ContactsContract.Data.CONTENT_URI, values);
             }
 

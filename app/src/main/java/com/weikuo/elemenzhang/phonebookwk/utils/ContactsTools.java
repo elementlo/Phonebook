@@ -1,7 +1,6 @@
 package com.weikuo.elemenzhang.phonebookwk.utils;
 
 import com.github.tamir7.contacts.Contact;
-import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
 
@@ -23,7 +22,7 @@ public class ContactsTools {
         }
         n.setGiven(contact.getGivenName());
         vcard.setStructuredName(n);
-        if (contact.getDisplayName()!=null){
+        if (contact.getDisplayName() != null) {
             vcard.setFormattedName(contact.getDisplayName());
         }
         if (contact.getAddresses() != null && contact.getAddresses().size() != 0) {
@@ -44,9 +43,7 @@ public class ContactsTools {
             }
         }
         if (contact.getCompanyName() != null) {
-            Organization organization = new Organization();
-            organization.setAltId(contact.getCompanyName());
-            vcard.addOrganization(organization);
+            vcard.setOrganization(contact.getCompanyName());
         }
 
         if (contact.getNote() != null) {

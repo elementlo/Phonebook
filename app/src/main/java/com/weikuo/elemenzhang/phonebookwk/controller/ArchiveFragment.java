@@ -282,7 +282,7 @@ public class ArchiveFragment extends Fragment {
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(Integer integer) {
+    public void onMessageEvent(ContactFragment.AchiveEvent achiveEvent) {
         if (archivesList != null) {
             archivesList.clear();
             ArchiveFragmentPermissionsDispatcher.getVCFFromStorageWithCheck

@@ -9,9 +9,12 @@ import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 
+import com.orhanobut.logger.Logger;
 import com.weikuo.elemenzhang.phonebookwk.R;
 import com.weikuo.elemenzhang.phonebookwk.utils.ACache;
 import com.weikuo.elemenzhang.phonebookwk.utils.GeneralTools;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -32,7 +35,6 @@ public class StorageActivity extends BaseActivity {
     @BindView(R.id.toolbar)
     Toolbar toolbar;
 
-
     private List<String> storageList;
     private ACache cache;
 
@@ -50,10 +52,10 @@ public class StorageActivity extends BaseActivity {
         toolbar.setTitle("Backup to");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        storageList = GeneralTools.getExtSDCardPathList();
+        /*storageList = GeneralTools.getExtSDCardPathList();
         if (storageList != null && storageList.size() > 1) {
             itemSdcard.setVisibility(View.VISIBLE);
-        }
+        }*/
         rbInter.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -65,19 +67,25 @@ public class StorageActivity extends BaseActivity {
                 }
             }
         });
-        rbOuter.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        /*rbOuter.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    Logger.d("here");
                     rbInter.setChecked(false);
-                    cache.put("path", storageList.get(0)+"/Contact_Backup");
+                    cache.put("path", storageList.get(1) + "/Contact_Backup");
                 }
             }
-        });
+        });*/
+    }
+
+    public static class StorageChangeEvent {
+
     }
 
     @Override
     public boolean onSupportNavigateUp() {
+        //EventBus.getDefault().post(new StorageChangeEvent());
         onBackPressed();
         return true;
     }

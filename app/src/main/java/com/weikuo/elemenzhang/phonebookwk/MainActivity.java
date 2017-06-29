@@ -32,7 +32,9 @@ import com.weikuo.elemenzhang.phonebookwk.adapter.ContentPagerAdapter;
 import com.weikuo.elemenzhang.phonebookwk.controller.ArchiveFragment;
 import com.weikuo.elemenzhang.phonebookwk.controller.BaseActivity;
 import com.weikuo.elemenzhang.phonebookwk.controller.ContactFragment;
+import com.weikuo.elemenzhang.phonebookwk.controller.ContactSyncService;
 import com.weikuo.elemenzhang.phonebookwk.controller.StorageActivity;
+import com.weikuo.elemenzhang.phonebookwk.utils.ACache;
 import com.weikuo.elemenzhang.phonebookwk.utils.GeneralTools;
 import com.weikuo.elemenzhang.phonebookwk.view.customview.MyViewPager;
 
@@ -48,7 +50,6 @@ import butterknife.ButterKnife;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
-@RuntimePermissions
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     @BindView(R.id.tl_maintab)
@@ -76,6 +77,7 @@ public class MainActivity extends BaseActivity
     private onDeleteItemClick onDeleteItemClick;
     private onDeleteArchClick onDeleteArchClick;
     private boolean isCheckMode = false;
+    private ACache aCache;
 
     public void setOnDeleteItemClickListner(onDeleteItemClick onDeleteItemClick) {
         this.onDeleteItemClick = onDeleteItemClick;
@@ -102,6 +104,7 @@ public class MainActivity extends BaseActivity
 
         initView();
         initTabContent();
+        startService(new Intent(this,ContactSyncService.class));
     }
 
     @Override
@@ -144,7 +147,6 @@ public class MainActivity extends BaseActivity
                 if (position == 1) {
                     cancelCheckMode();
                     EventBus.getDefault().post(0 + "");
-                    MainActivityPermissionsDispatcher.requestStorageWithCheck(MainActivity.this);
                 }
                 invalidateOptionsMenu();
             }
@@ -157,6 +159,7 @@ public class MainActivity extends BaseActivity
     }
 
     private void initView() {
+        aCache=ACache.get(this);
         mViewpager.setScroll(true);
         toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -320,19 +323,6 @@ public class MainActivity extends BaseActivity
         return true;
     }
 
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        MainActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
-    }
-
-    @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    public void requestStorage() {
-        Logger.d("request storage permission");
-    }
-
-
     public MyViewPager getViewPager() {
         return mViewpager;
     }
@@ -394,4 +384,11 @@ public class MainActivity extends BaseActivity
             tvStorage.setText(Environment.getExternalStorageDirectory() + "");
         }
     }
+
+    /*@Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSorageEvent(StorageActivity.StorageChangeEvent storageChangeEvent){
+        if (aCache.getAsString("path")!=null&&tvStorage!=null){
+            tvStorage.setText(aCache.getAsString("path")+"");
+        }
+    }*/
 }

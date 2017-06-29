@@ -110,6 +110,10 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MyViewHo
             } else {
                 holder.tvTitle.setVisibility(View.INVISIBLE);
             }
+        }else {
+            holder.roundedLetterView.setTitleText("");
+            holder.contactName.setText("");
+            holder.tvTitle.setText("");
         }
 
 

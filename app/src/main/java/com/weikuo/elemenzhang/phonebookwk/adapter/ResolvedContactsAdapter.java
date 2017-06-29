@@ -58,7 +58,11 @@ public class ResolvedContactsAdapter extends RecyclerView.Adapter<ResolvedContac
         }
         if (name != null) {
             holder.contactName.setText(name);
-            holder.roundedLetterView.setTitleText(name.toUpperCase().charAt(0) + "");
+            if (name.toUpperCase() != null && !name.toUpperCase().isEmpty()) {
+                holder.roundedLetterView.setTitleText(name.toUpperCase().charAt(0) + "");
+            } else {
+                holder.roundedLetterView.setTitleText("");
+            }
         }
         holder.cbContact.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

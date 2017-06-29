@@ -14,6 +14,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,11 +29,14 @@ import com.github.tamir7.contacts.Contacts;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.j256.ormlite.table.TableUtils;
 import com.weikuo.elemenzhang.phonebookwk.MainActivity;
 import com.weikuo.elemenzhang.phonebookwk.R;
 import com.weikuo.elemenzhang.phonebookwk.adapter.ContactAdapter;
+import com.weikuo.elemenzhang.phonebookwk.bean.RawContact;
 import com.weikuo.elemenzhang.phonebookwk.utils.ACache;
 import com.weikuo.elemenzhang.phonebookwk.utils.ContactsTools;
+import com.weikuo.elemenzhang.phonebookwk.utils.DatabaseHelper;
 import com.weikuo.elemenzhang.phonebookwk.utils.GeneralTools;
 import com.weikuo.elemenzhang.phonebookwk.view.customview.ColorGroupSectionTitleIndicator;
 import com.weikuo.elemenzhang.phonebookwk.view.customview.CustomDialog;
@@ -43,6 +47,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,7 +109,7 @@ public class ContactFragment extends Fragment {
                     mFab.setEnabled(false);
                     ((MainActivity) getActivity()).dismissProgressbar();
                     ((MainActivity) getActivity()).getViewPager().setScroll(true);
-                    EventBus.getDefault().post(BROADCAST_ARCHIVE);
+                    EventBus.getDefault().post(new AchiveEvent());
                     break;
                 case BACK_UP_FAILED:
                     Snackbar.make(mFab, R.string.backup_failed, Snackbar.LENGTH_SHORT).
@@ -282,6 +287,60 @@ public class ContactFragment extends Fragment {
                 Message message = mHandler.obtainMessage();
                 message.what = INIT_CANTACT_LIST;
                 mHandler.sendMessage(message);
+                //getActivity().deleteDatabase("sqlite-contact.db");
+                DatabaseHelper helper=DatabaseHelper.getHelper(getActivity());
+                helper.onDelete();
+                try {
+                    if (!(helper.getUserDao().isTableExists())){
+                        helper.reCreateTable();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                RawContact rawContact;
+                for (int i = 0; i < contactList.size(); i++) {
+                    rawContact=new RawContact();
+                    if (contactList.get(i).getGivenName()!=null){
+                        rawContact.setName(contactList.get(i).getGivenName());
+                    }else {
+                        rawContact.setName("");
+                    }
+                    if (contactList.get(i).getEmails()!=null&&contactList.get(i).getEmails().size()>0){
+                        rawContact.setEmail(contactList.get(i).getEmails().get(0).getAddress());
+                    }
+                    if (contactList.get(i).getFamilyName()!=null){
+                        rawContact.setFamily(contactList.get(i).getFamilyName());
+                    }else {
+                        rawContact.setFamily("");
+                    }
+                    if (contactList.get(i).getPhoneNumbers()!=null&&contactList.get(i).getPhoneNumbers().size()>0){
+                        rawContact.setPhone(contactList.get(i).getPhoneNumbers().get(0).getNumber());
+                    }else {
+                        rawContact.setPhone("");
+                    }
+                    if (contactList.get(i).getAddresses()!=null&&contactList.get(i).getAddresses().size()>0){
+                        rawContact.setAddress(contactList.get(i).getAddresses().get(0).getFormattedAddress());
+                    }else {
+                        rawContact.setAddress("");
+                    }
+                    if (contactList.get(i).getCompanyName()!=null){
+                        rawContact.setCompany(contactList.get(i).getCompanyName());
+                    }else {
+                        rawContact.setCompany("");
+                    }
+                    if (contactList.get(i).getNote()!=null){
+                        rawContact.setNote(contactList.get(i).getNote());
+                    }else {
+                        rawContact.setNote("");
+                    }
+                    try {
+                        helper.getUserDao().create(rawContact);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
             }
         }).start();
     }
@@ -290,7 +349,8 @@ public class ContactFragment extends Fragment {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         ContactFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
-        requestContactPermission();
+        ContactFragmentPermissionsDispatcher.requestContactPermissionWithCheck(this);
+        //requestContactPermission();
         EventBus.getDefault().post(new StoragePermission());
     }
 
@@ -358,6 +418,20 @@ public class ContactFragment extends Fragment {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onContactChange(ContactSyncService.ContactChanged contactChanged){
+        contactList=contactChanged.getContactList();
+        if (contactList!=null){
+            Message message = mHandler.obtainMessage();
+            message.what = INIT_CANTACT_LIST;
+            mHandler.sendMessage(message);
+        }
+    }
+
     public static class StoragePermission {
+    }
+
+    public static class AchiveEvent{
+
     }
 }

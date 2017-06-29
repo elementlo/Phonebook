@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.os.storage.StorageManager;
 import android.util.Log;
 
+import com.github.tamir7.contacts.Contact;
 import com.orhanobut.logger.Logger;
 import com.weikuo.elemenzhang.phonebookwk.R;
 
@@ -30,6 +31,35 @@ import java.util.List;
 
 public class GeneralTools {
     static int i = 1;
+
+    public static List<Contact> intersection(List<List<Contact>> lists) {
+        if (lists == null || lists.size() == 0) {
+            return null;
+        }
+        ArrayList<List<Contact>> arrayList = new ArrayList<>(lists);
+        for (int i = 0; i < arrayList.size(); i++) {
+            List<Contact> list = arrayList.get(i);
+            // 去除空集合
+            if (list == null || list.size() == 0) {
+                arrayList.remove(list);
+                i--;
+            }
+        }
+        if (arrayList.size() == 0) {
+            return null;
+        }
+        List<Contact> intersection = arrayList.get(0);
+// 就只有一个非空集合，结果就是他咯
+        if (arrayList.size() == 1) {
+            return intersection;
+        }
+// 有多个非空集合，直接挨个交集
+        for (int i = 1; i < arrayList.size() - 1; i++) {
+            intersection.retainAll(arrayList.get(i));
+        }
+        return intersection;
+    }
+
 
     public static File formatDate(File rawFile) {
         Date date = new Date();
